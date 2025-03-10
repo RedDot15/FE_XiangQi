@@ -1,0 +1,34 @@
+<section class="d-flex align-items-center h_vh100">
+    <div class="container">
+        <div class="d-flex align-items-center justify-content-center form_wrapper">
+            <div class="tab-wrapper">
+                <h3  class="text-center">Cờ tướng</h3>
+                <div class="tab-button d-flex justify-content-center">
+                    <button (click)="isLogin = true" [class.active]="isLogin">Đăng nhập</button>
+                    <button (click)="isLogin = false" [class.active]="!isLogin">Đăng kí</button>
+                </div>
+                <div class="tab-content">
+                    <form *ngIf="isLogin" class="form">
+                        <label>Tên đăng nhập</label>
+                        <input type="text" placeholder="Nhập tên đăng nhập" class="form-control">
+                        <label for="">Mật khẩu</label>
+                        <input type="password" placeholder="Nhập mật khẩu của bạn" class="form-control">
+                        <button type="submit" class="btn btn-danger submit-btn">Đăng nhập</button>
+                    </form>
+            
+                    <!-- Form Đăng kí -->
+                    <form *ngIf="!isLogin" class="form">
+                        <label>Tên đăng nhập</label>
+                        <input type="text" placeholder="Nhập tên đăng nhập" class="form-control">
+                        <label for="">Mật khẩu</label>
+                        <input type="password" placeholder="Nhập mật khẩu" class="form-control">
+                        <label for="">Xác nhận mật khẩu</label>
+                        <input type="password" placeholder="Nhập lại mật khẩu" class="form-control">
+                        <button type="submit" class="btn btn-success submit-btn">Đăng kí</button>
+                    </form>
+                </div>
+                
+            </div>
+        </div>
+    </div>
+</section>

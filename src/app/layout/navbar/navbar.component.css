@@ -1,0 +1,20 @@
+.navbar-item-wrapper{
+    margin-top: 20px;
+    margin-bottom: 20px;
+}
+.navbar-item-wrapper :hover{
+    background-color: rgb(227, 220, 212);
+}
+.item-wrapper{
+  height: 60px;
+}
+
+.item-wrapper .icon{
+    height: 41px;
+    width: 41px;
+    margin-left: 20px;
+}
+.item-wrapper .item-name{
+    margin-left: 20px;
+    font-size: 20px;
+}

@@ -1,0 +1,35 @@
+.container{
+    height: 100%;
+}
+.play-now{
+    margin-top: 30px;
+    width: 100%;
+}
+.setup-wrapper{
+    margin-top: 50px;
+    margin-bottom: 50px;
+    padding: 20px;
+    background-color: rgb(255, 251, 242);
+    width: 500px;
+    border-radius: 10px;
+    border: 1px solid rgb(194, 53, 46);
+}
+.invite-wrapper{
+    width: 100%;
+    margin-top: 20px;
+}
+
+.search-result{
+    overflow-y: auto;
+    max-height: 400px;
+}
+.player-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    margin-bottom: 5px;
+    background: #f9f9f9;
+}

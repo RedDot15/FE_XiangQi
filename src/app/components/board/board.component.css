@@ -1,0 +1,51 @@
+.board {
+  display: grid;
+  background-image: url('/assets/board_images/board_img.jpg'); /* Thay bằng đường dẫn hình ảnh của bạn */
+  background-size: cover; /* Giúp hình ảnh phủ toàn bộ màn hình */
+  background-position: center;
+  background-repeat: no-repeat;
+  grid-template-columns: repeat(9, 60px);
+  grid-template-rows: repeat(10, 60px);
+  gap: 2px;
+  padding: 60px;
+  width: fit-content;
+  border: 2px solid black;
+}
+
+.board-rotate {
+  transform: rotate(180deg);
+  transform-origin: center;
+}
+
+.row {
+  display: contents;
+}
+
+.cell {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  justify-content: center;
+  align-items: center;
+  border: 1px solid #ddd;
+}
+
+.piece{
+  width: 50px;
+  height: 50px;
+  transition: transform 0.2s;
+  border-radius: 50%; 
+}
+
+.piece_reverse{
+  transform: rotate(180deg);
+}
+
+.selected {
+  transform: scale(1.2); 
+  box-shadow: 0 0 10px rgb(255, 255, 0); 
+}
+
+.piece_reverse.selected {
+  transform: rotate(180deg) scale(1.2); 
+}

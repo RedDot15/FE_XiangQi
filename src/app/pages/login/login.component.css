@@ -1,0 +1,71 @@
+.h_vh100{
+    height: 100vh;
+    background-image: url("/assets/bg_game.jpg");
+    background-repeat: no-repeat;
+    background-size: cover;
+}
+.container{
+    width: 100%;
+    height: 100%;
+    margin: 0 auto;
+   
+}
+.form_wrapper{
+    height: 100%;
+    width: 100%;
+    padding: auto;
+}
+.tab-wrapper{
+    border-radius: 20px;
+    width: 432px;
+    max-height: 100%;
+    padding: 40px;
+    box-shadow: rgba(0, 0, 0, 0.075) 0px 2px 4px;
+    background-color: rgb(255, 251, 242);
+    color: rgb(194, 53, 46);
+}
+
+.tab-button{
+    width: 100%;
+}
+
+.tab-button button {
+    flex: 1;
+    padding: 10px;
+    border: none;
+    cursor: pointer;
+    background:none;
+    font-size: 26px;
+    text-align: center;
+    color: rgb(101, 79, 77);
+    transition: 0.3s;
+    position: relative;
+}
+.tab-button button.active {
+    color: rgb(194, 53, 46);
+    font-weight: bold;
+}
+
+.tab-button button.active::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: -3px;
+    width: 100%;
+    height: 3px;
+    background-color: rgb(194, 53, 46);
+    border-radius: 2px;
+}
+.form{
+    margin-top: 30px;
+    font-size: 20px;
+}
+.form .submit-btn{
+    width: 100%;
+    margin-top: 20px;
+    border-radius: 30px;
+}
+
+.form label{
+    color: rgb(102, 79, 76);
+}

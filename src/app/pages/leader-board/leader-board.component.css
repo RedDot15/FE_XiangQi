@@ -1,0 +1,11 @@
+.title{
+    color: rgb(194, 53, 46);
+    font-size: 24px;
+    font-weight: bold;
+    background-color: bisque;
+    height: 50px;
+}
+.board-wrapper{
+    margin-top: 40px;
+    
+}

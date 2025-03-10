@@ -1,0 +1,11 @@
+.header-wrapper{
+  height: 60px;
+}
+.player-name{
+    font-size: 20px;
+    color: white;
+}
+.notification-icon{
+    font-size: 30px;
+    color: white;
+}

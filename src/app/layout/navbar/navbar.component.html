@@ -1,0 +1,10 @@
+<div class="menu_content_wrapper">
+    <div *ngFor="let item of menu" class="navbar-item-wrapper" (click)="onNavigate(item.path)">
+        <div class="item-wrapper d-flex align-items-center">
+                <img src="{{item.icon}}" alt="" class="icon">
+                <div class="item-name">
+                    {{item.name}}
+                </div>
+        </div>
+    </div>
+</div>
