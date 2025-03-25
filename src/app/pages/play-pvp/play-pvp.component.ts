@@ -2,6 +2,10 @@ import { Component } from '@angular/core';
 import { NgFor, NgIf } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { NzModalModule, NzModalService,NzModalRef } from 'ng-zorro-antd/modal';
+import { WebsocketService } from '../../service/websocket.service';
+import { QueueService } from '../../service/queue.service';
+import { ResponseObject } from '../../models/response.object';
+import { HttpErrorResponse } from '@angular/common/http';
 
 @Component({
   selector: 'app-play-pvp',
@@ -10,7 +14,7 @@ import { NzModalModule, NzModalService,NzModalRef } from 'ng-zorro-antd/modal';
     NgIf,
     NgFor,
     FormsModule,
-    NzModalModule // Import để dùng modal
+    NzModalModule,// Import để dùng modal
   ],
   templateUrl: './play-pvp.component.html',
   styleUrls: ['./play-pvp.component.css'] // Fix lỗi styleUrl -> styleUrls
@@ -21,8 +25,7 @@ export class PlayPvpComponent {
   isSearched: boolean = false;
   modalRef!: NzModalRef; // Lưu trữ modal để có thể đóng
 
-
-  constructor(private modal: NzModalService) {}
+  constructor(private modal: NzModalService, private wsService: WebsocketService, private queueService: QueueService) {}
 
   fakePlayers = [
     { id: 'p1', name: 'Nguyễn Văn A' },
@@ -68,5 +71,25 @@ export class PlayPvpComponent {
         }
       ]
     });
+
+    // Lắng nghe phản hồi từ server
+    this.wsService.listen(responseObject => {
+      console.log(responseObject)
+      if (responseObject.data.status === 'MATCH_FOUND') {
+        this.modalRef.close();
+        this.modal.success({
+          nzTitle: 'Ghép cặp thành công!',
+        });
+      }
+    });
+
+    this.queueService.joinQueue().subscribe(
+      (response: ResponseObject) => {
+        console.log(response);
+      },
+      (error: HttpErrorResponse) => {
+        alert(error.message);
+      }
+    );
   }
 }
