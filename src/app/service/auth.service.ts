@@ -13,8 +13,8 @@ export class AuthService {
     private cookieService: CookieService,
     private router: Router) { }
 
-  auth = async (auth: AuthModel) => await this.httpClient.post('api/user/login', auth);
-  register = async (auth: AuthModel) => await this.httpClient.post('api/user/register', auth);
+  auth = async (auth: AuthModel) => await this.httpClient.post('api/auth/token', auth);
+  register = async (auth: AuthModel) => await this.httpClient.post('api/player/register', auth);
   
   authenticated = async () => {
     const token = this.cookieService.getToken();

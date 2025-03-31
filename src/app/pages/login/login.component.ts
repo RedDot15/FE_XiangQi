@@ -30,14 +30,17 @@ export class LoginComponent {
     ) {}
   
     async login(event: Event) {
-      console.log(this.auth)
       event.preventDefault();
+
+      // Get token
       const res = await this.authService.auth(this.auth);
-      if (res && res.statusCode == 200) {
-        const { authToken, refreshToken } = res.data;
-        this.cookieService.setToken(authToken);
+      // Set token to cookie
+      if (res.status == "ok") {
+        const { accessToken, refreshToken, authenticated } = res.data;
+        this.cookieService.setToken(accessToken);
         this.cookieService.setRefreshToken(refreshToken);
         this.router.navigate(['/']);
+        console.log("Navigate success.")
       }
     }
   
@@ -46,7 +49,7 @@ export class LoginComponent {
       if (this.auth.password !== this.confirmPassword) return;
   
       const res = await this.authService.register(this.auth);
-      if (res && res.statusCode == 200) {
+      if (res.status == "ok") {
         this.isLogin = true; // Chuyển về trang đăng nhập sau khi đăng ký thành công
       }
     }

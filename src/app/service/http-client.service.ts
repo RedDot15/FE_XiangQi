@@ -1,4 +1,4 @@
-import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
+import { HttpClient, HttpHeaders, HttpParams, HttpUrlEncodingCodec } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { CookieService } from './cookie.service';
 import { environment } from '../../environments/environment';
@@ -15,32 +15,37 @@ export class HttpClientService {
 
   async getWithAuth(path: string, params: any): Promise<any> {
     const url = `${environment.baseUrl}/${path}`;
-    let htppParams: HttpParams = new HttpParams();
     const token = this.cookieService.getToken();
 
+    // Define headers
     const headers = new HttpHeaders({
       'Authorization': `Bearer ${token}`
     });
 
+    // Define params
+    let httpParams: HttpParams = new HttpParams();
     Object.keys(params).forEach(key => {
       if (params[key]) {
-        htppParams = htppParams.set(key, params[key]);
+        httpParams = httpParams.set(key, params[key]);
       }
     });
 
+    // Get request
     try {
       const res = await lastValueFrom(this.http.get<any>(url, {
-        params: htppParams,
+        params: httpParams,
         headers: headers
       }));
       return res;
     } catch (error: any) {
       console.log(error);
-      if(error.status == 401){
-        const isRefreshedToken = await this.refreshToken(token, this.cookieService.getRefreshToken());  
-        if(isRefreshedToken){
+      // If unauthenticated: try refresh token
+      if (error.status == 401){
+        const isRefreshedToken = await this.refreshToken(this.cookieService.getRefreshToken());  
+        if (isRefreshedToken){
           return await this.getWithAuth(path, params);
         }
+        // Navigate back to login page if refresh fail
         this.router.navigate(["/login"]); 
       }
       return null;
@@ -51,21 +56,25 @@ export class HttpClientService {
     const url = `${environment.baseUrl}/${path}`;
     const token = this.cookieService.getToken();
 
+    // Define header
     const headers = new HttpHeaders({
       'Content-Type': 'application/json; charset=utf-8',
       'Authorization': `Bearer ${token}`
     });
 
+    // Post request
     try {
       return await lastValueFrom(this.http.post<any>(url, params, {
         headers: headers
       }));
     } catch (error: any) {
+      // If unauthenticated: try refresh token
       if(error.status == 401){
-        const isRefreshedToken = await this.refreshToken(token, this.cookieService.getRefreshToken());  
+        const isRefreshedToken = await this.refreshToken(this.cookieService.getRefreshToken());  
         if(isRefreshedToken){
           return await this.postWithAuth(path, params);
         }
+        // Navigate back to login page if refresh fail
         this.router.navigate(["/login"]); 
       }
       return null;
@@ -74,30 +83,35 @@ export class HttpClientService {
 
   async deleteWithAuth(path: string, params: any): Promise<any> {
     const url = `${environment.baseUrl}/${path}`;
-    let htppParams: HttpParams = new HttpParams();
     const token = this.cookieService.getToken();
 
+    // Define headers
     const headers = new HttpHeaders({
       'Authorization': `Bearer ${token}`
     });
-
+    
+    // Define params
+    let httpParams: HttpParams = new HttpParams();
     Object.keys(params).forEach(key => {
       if (params[key]) {
-        htppParams = htppParams.set(key, params[key]);
+        httpParams = httpParams.set(key, params[key]);
       }
     });
 
+    // Delete request
     try {
       return await lastValueFrom(this.http.delete<any>(url, {
-        params: htppParams,
+        params: httpParams,
         headers: headers
       }));
     } catch (error: any) {
+      // If unauthenticated: try refresh token
       if(error.status == 401){
-        const isRefreshedToken = await this.refreshToken(token, this.cookieService.getRefreshToken());  
+        const isRefreshedToken = await this.refreshToken(this.cookieService.getRefreshToken());  
         if(isRefreshedToken){
           return await this.deleteWithAuth(path, params);
         }
+        // Navigate back to login page if refresh fail
         this.router.navigate(["/login"]); 
       }
       return null;
@@ -108,21 +122,25 @@ export class HttpClientService {
     const url = `${environment.baseUrl}/${path}`;
     const token = this.cookieService.getToken();
 
+    // Define headers
     const headers = new HttpHeaders({
       'Content-Type': 'application/json; charset=utf-8',
       'Authorization': `Bearer ${token}`
     });
 
+    // Put request
     try {
       return await lastValueFrom(this.http.put<any>(url, params, {
         headers: headers
       }));
     } catch (error: any) {
+      // If unauthenticated: try refresh token
       if(error.status == 401){
-        const isRefreshedToken = await this.refreshToken(token, this.cookieService.getRefreshToken());  
+        const isRefreshedToken = await this.refreshToken(this.cookieService.getRefreshToken());  
         if(isRefreshedToken){
           return await this.putWithAuth(path, params);
         }
+        // Navigate back to login page if refresh fail
         this.router.navigate(["/login"]); 
       }
       return null;
@@ -133,31 +151,44 @@ export class HttpClientService {
     const url = `${environment.baseUrl}/${path}`;
     const token = this.cookieService.getToken();
 
+    // Define header
     const headers = new HttpHeaders({
       'Authorization': `Bearer ${token}`
     });
     
+    // Post file request
     try {
       return await lastValueFrom(this.http.post<any>(url, data, {
         headers: headers
       }));
     } catch (error: any) {
+      // If unauthenticated: try refresh token
       if(error.status == 401){
-        const isRefreshedToken = await this.refreshToken(token, this.cookieService.getRefreshToken());  
+        const isRefreshedToken = await this.refreshToken(this.cookieService.getRefreshToken());  
         if(isRefreshedToken){
           return await this.postWithFile(path, data);
         }
+        // Navigate back to login page if refresh fail
         this.router.navigate(["/login"]); 
       }
       return null;
     }
   }
 
-  async post<T>(path: string, params: any) {
+  async post<T>(path: string, body: any) {
     const url = `${environment.baseUrl}/${path}`;
+
+    // Define header
+    const headers = new HttpHeaders({
+      'Content-Type': 'application/json; charset=utf-8',
+    });
+
+    // Post request
     try {
-      return await lastValueFrom(this.http.post<any>(url, params))
-    } catch (error) {
+      return await lastValueFrom(this.http.post<any>(url, body, {
+        headers: headers
+      }));
+    } catch (error : any) {
       return null;
     }
   }
@@ -172,6 +203,7 @@ export class HttpClientService {
       }
     });
 
+    // Get request
     try {
       return await lastValueFrom(this.http.get<any>(url, {
         params: httpParams
@@ -181,19 +213,28 @@ export class HttpClientService {
     }
   }
 
-  async refreshToken(token: string, refreshToken: string){
-    const url = `${environment.baseUrl}/api/user/refreshToken`;
-    let httpParams:HttpParams = new HttpParams();
-    httpParams = httpParams.set('token', token);
-    httpParams = httpParams.set('refreshToken', refreshToken);    
-    const res = await lastValueFrom(this.http.get<any>(url, {
-      params: httpParams
+  async refreshToken(refreshToken: string){
+    const url = `${environment.baseUrl}/api/auth/token/refresh`;
+    
+    // Define header
+    const headers = new HttpHeaders({
+      'Content-Type': 'application/json; charset=utf-8',
+    });
+
+    const body = { refreshToken: refreshToken };
+
+    // Refresh token request
+    const res = await lastValueFrom(this.http.post<any>(url, body, {
+      headers: headers
     }));
-    if(res && res.statusCode == 200){
-      this.cookieService.setToken(res.data.authToken); 
+
+    // Save new access token & new refresh token
+    if(res == "ok"){
+      this.cookieService.setToken(res.data.accessToken); 
       this.cookieService.setRefreshToken(res.data.refreshToken);  
       return true;  
     }
+
     return false;
   } 
 }

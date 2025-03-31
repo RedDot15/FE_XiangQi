@@ -4,9 +4,12 @@ import { Injectable } from '@angular/core';
   providedIn: 'root'
 })
 export class CookieService {
+
   private tokenKey: string = "dm";
   private refreshTokenKey: string = "rf";
+
   constructor() {}  
+
   public getCookie(name: string) {
     let ca: Array<string> = document.cookie.split(';');
     // console.log(document.cookie);
@@ -22,11 +25,7 @@ export class CookieService {
     }
     return '';
   }
-
-  public deleteCookie(cookieName: string) {
-    this.setCookie({ name: cookieName, value: '', expireDays: -1 });
-  }
-
+  
   /**
    * Expires default 1 day
    * If params.session is set and true expires is not added
@@ -59,6 +58,11 @@ export class CookieService {
         : '');
   }
 
+  public deleteCookie(cookieName: string) {
+    this.setCookie({ name: cookieName, value: '', expireDays: -1 });
+  }
+
+  // Access token
   public setToken(token: string){
     this.setCookie({
       name: this.tokenKey,
@@ -74,6 +78,7 @@ export class CookieService {
     this.deleteCookie(this.tokenKey);
   }
 
+  // Refresh token
   public setRefreshToken(refreshToken: string){
     this.setCookie({
       name: this.refreshTokenKey,
