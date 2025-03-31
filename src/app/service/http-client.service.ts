@@ -52,7 +52,7 @@ export class HttpClientService {
     }
   }
 
-  async postWithAuth(path: string, params: any): Promise<any> {
+  async postWithAuth(path: string, body: any): Promise<any> {
     const url = `${environment.baseUrl}/${path}`;
     const token = this.cookieService.getToken();
 
@@ -64,15 +64,16 @@ export class HttpClientService {
 
     // Post request
     try {
-      return await lastValueFrom(this.http.post<any>(url, params, {
+      return await lastValueFrom(this.http.post<any>(url, body, {
         headers: headers
       }));
     } catch (error: any) {
       // If unauthenticated: try refresh token
       if(error.status == 401){
+        console.log('Refresh token...')
         const isRefreshedToken = await this.refreshToken(this.cookieService.getRefreshToken());  
         if(isRefreshedToken){
-          return await this.postWithAuth(path, params);
+          return await this.postWithAuth(path, body);
         }
         // Navigate back to login page if refresh fail
         this.router.navigate(["/login"]); 
@@ -229,7 +230,7 @@ export class HttpClientService {
     }));
 
     // Save new access token & new refresh token
-    if(res == "ok"){
+    if(res.status == "ok"){
       this.cookieService.setToken(res.data.accessToken); 
       this.cookieService.setRefreshToken(res.data.refreshToken);  
       return true;  
