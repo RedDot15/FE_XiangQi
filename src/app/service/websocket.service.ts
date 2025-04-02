@@ -27,8 +27,7 @@ export class WebsocketService {
 
     // Decode the JWT to get the user ID
     const uid = this.getUidFromToken(token);
-    console.log('User ID:', uid); // For debugging
-
+    
     if (this.connection) {
       return this.subscription = this.connection.subscribe('/topic/queue/' + uid, message => 
         fun(JSON.parse(message.body))); 

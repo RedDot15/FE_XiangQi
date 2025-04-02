@@ -70,7 +70,6 @@ export class HttpClientService {
     } catch (error: any) {
       // If unauthenticated: try refresh token
       if(error.status == 401){
-        console.log('Refresh token...')
         const isRefreshedToken = await this.refreshToken(this.cookieService.getRefreshToken());  
         if(isRefreshedToken){
           return await this.postWithAuth(path, body);
@@ -215,19 +214,14 @@ export class HttpClientService {
   }
 
   async refreshToken(refreshToken: string){
-    const url = `${environment.baseUrl}/api/auth/token/refresh`;
-    
-    // Define header
-    const headers = new HttpHeaders({
-      'Content-Type': 'application/json; charset=utf-8',
-    });
+    console.log('Refresh token...')
 
+    // Define request
+    const path = `/api/auth/token/refresh`;
     const body = { refreshToken: refreshToken };
 
-    // Refresh token request
-    const res = await lastValueFrom(this.http.post<any>(url, body, {
-      headers: headers
-    }));
+    // Refresh request
+    const res = await this.post(path, body);
 
     // Save new access token & new refresh token
     if(res.status == "ok"){
