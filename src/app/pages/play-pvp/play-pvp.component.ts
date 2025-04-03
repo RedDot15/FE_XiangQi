@@ -7,6 +7,7 @@ import { QueueService } from '../../service/queue.service';
 import { ResponseObject } from '../../models/response.object';
 import { HttpErrorResponse } from '@angular/common/http';
 import { StompSubscription } from '@stomp/stompjs';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-play-pvp',
@@ -28,7 +29,11 @@ export class PlayPvpComponent {
 
   private subscription: any;
 
-  constructor(private modal: NzModalService, private wsService: WebsocketService, private queueService: QueueService) {}
+  constructor(
+    private modal: NzModalService, 
+    private wsService: WebsocketService, 
+    private queueService: QueueService,
+    private router: Router) {}
 
   fakePlayers = [
     { id: 'p1', name: 'Nguyễn Văn A' },
@@ -82,7 +87,7 @@ export class PlayPvpComponent {
     });
 
     // Lắng nghe phản hồi từ server
-    this.subscription = this.wsService.listen(responseObject => {
+    this.subscription = this.wsService.listenToQueue(responseObject => {
       if (responseObject.data.status === 'MATCH_FOUND') {
         this.modalRef.close();
         const successModal = this.modal.success({
@@ -91,6 +96,7 @@ export class PlayPvpComponent {
             // Unsubscribe when success modal is closed
             if (this.subscription) {
               this.subscription.unsubscribe();
+              this.router.navigate(['/match/' + responseObject.data.matchId]);
             }
           }
         });

@@ -12,9 +12,7 @@ export class QueueService {
     private apiServerUrl = 'http://localhost:8080';
 
   constructor(
-    private httpClient: HttpClientService,
-    private http: HttpClient, 
-    private cookieService: CookieService) {
+    private httpClient: HttpClientService) {
   }
 
   joinQueue = async () => await this.httpClient.postWithAuth('api/queue/join', {});

@@ -36,11 +36,10 @@ export class LoginComponent {
       const res = await this.authService.auth(this.auth);
       // Set token to cookie
       if (res.status == "ok") {
-        const { accessToken, refreshToken, authenticated } = res.data;
+        const { accessToken, refreshToken} = res.data;
         this.cookieService.setToken(accessToken);
         this.cookieService.setRefreshToken(refreshToken);
         this.router.navigate(['/']);
-        console.log("Navigate success.")
       }
     }
   

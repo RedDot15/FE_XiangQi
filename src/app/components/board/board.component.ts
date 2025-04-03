@@ -1,7 +1,13 @@
 import { NgClass, NgFor, NgIf, NgStyle } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
-import { ViewChild, ElementRef } from '@angular/core';
-import { ChangeDetectorRef } from '@angular/core';
+import { MatchService } from '../../service/match.service';
+import { ActivatedRoute } from '@angular/router';
+import { CookieService } from '../../service/cookie.service';
+import { jwtDecode } from 'jwt-decode';
+import { WebsocketService } from '../../service/websocket.service';
+import { MoveRequest } from '../../models/request/move.request';
+import { from } from 'rxjs';
+import { Position } from '../../models/position.model';
 
 interface Piece {
   type: 'xe' | 'ma' | 'tinh' | 'si' | 'tuong' | 'phao' | 'tot';
@@ -18,8 +24,6 @@ interface Piece {
   templateUrl: './board.component.html',
   styleUrl: './board.component.css',
 })
-
-
 export class BoardComponent implements OnInit {
   board: (Piece | null)[][] = [
     [{ type: 'xe', color: 'black' }, { type: 'ma', color: 'black' }, { type: 'tinh', color: 'black' }, { type: 'si', color: 'black' }, { type: 'tuong', color: 'black' }, { type: 'si', color: 'black' }, { type: 'tinh', color: 'black' }, { type: 'ma', color: 'black' }, { type: 'xe', color: 'black' }],
@@ -37,11 +41,94 @@ export class BoardComponent implements OnInit {
   selectedPiece: { row: number, col: number } | null = null;
   currentPlayer: 'red' | 'black' = 'red';
   playerView: 'red' | 'black' = 'red';
+  matchId: string = '-1';
+
+  private subscription: any;
+
+  constructor(
+      private matchService : MatchService,
+      private route: ActivatedRoute,
+      private cookieService: CookieService,
+      private wsService: WebsocketService
+      ) {}
 
   ngOnInit() {
+    this.getMatchState();
   }
 
+  async getMatchState(){
+    const token = this.cookieService.getToken();
+
+    // Decode the JWT to get the user ID
+    const uid = this.getUidFromToken(token);
+
+    var matchState;
+
+    // Get the match ID from the route parameters
+    this.matchId = this.route.snapshot.paramMap.get('id')!; // 'id' should match your route parameter name
+    if (this.matchId) {
+      // Conver string to number
+       matchState = await this.matchService.getMatch(this.matchId); // Pass the match ID to getMatch()
+       // Convert boardState 
+       this.board = this.convertBoardState(matchState.data.boardState);
+       // Initial view
+       this.playerView = matchState.data.redPlayerId == uid ? 'red' : 'black';
+       // Get current turn
+       this.currentPlayer = matchState.data.turn == uid ? this.playerView : this.playerView == 'red' ? 'black' : 'red';
+
+      // Lắng nghe phản hồi nước đi của đối thủ từ server
+      this.subscription = this.wsService.listenToMatch(responseObject => {
+        if (responseObject.status === 'ok') {
+          const move = responseObject.data
+          // Move the piece
+          this.board[move.to.row][move.to.col] = this.board[move.from.row][move.from.col];
+          this.board[move.from.row][move.from.col] = null;
+          // Switch turn
+          this.togglePlayer();
+        }
+      });
+    } else {
+      console.error('Match ID not found in route parameters');
+    }
+  }
+
+  private convertBoardState(boardState: string[][]): (Piece | null)[][] {
+    const pieceMap: { [key: string]: Piece } = {
+      'r': { type: 'xe', color: 'black' },
+      'h': { type: 'ma', color: 'black' },
+      'e': { type: 'tinh', color: 'black' },
+      'a': { type: 'si', color: 'black' },
+      'k': { type: 'tuong', color: 'black' },
+      'c': { type: 'phao', color: 'black' },
+      'p': { type: 'tot', color: 'black' },
+      'R': { type: 'xe', color: 'red' },
+      'H': { type: 'ma', color: 'red' },
+      'E': { type: 'tinh', color: 'red' },
+      'A': { type: 'si', color: 'red' },
+      'K': { type: 'tuong', color: 'red' },
+      'C': { type: 'phao', color: 'red' },
+      'P': { type: 'tot', color: 'red' }
+    };
+
+    return boardState.map(row =>
+      row.map(cell => (cell === '' ? null : pieceMap[cell]))
+    );
+  }
+
+    // Function to decode JWT and extract uid using jwt-decode
+    private getUidFromToken(token: string): string | null {
+      try {
+        const decoded: any = jwtDecode(token); // Decode the token
+        return decoded.uid || null; // Extract uid
+      } catch (error) {
+        console.error('Error decoding JWT:', error);
+        return null;
+      }
+    }
+
   onCellClick(row: number, col: number) {
+    if (this.playerView !== this.currentPlayer) return;
+
     const cell = this.board[row][col];
 
     // When haven't select any piece
@@ -54,7 +141,6 @@ export class BoardComponent implements OnInit {
     // When a piece is selected
     this.movePiece(this.selectedPiece.row, this.selectedPiece.col, row, col);
     this.selectedPiece = null;
-
   }
 
   movePiece(fromRow: number, fromCol: number, toRow: number, toCol: number) {
@@ -70,16 +156,16 @@ export class BoardComponent implements OnInit {
       if (!this.isValidMoveForKing(fromRow, fromCol, toRow, toCol, fromPiece)) return;
     }
     if (fromPiece?.type === 'phao') {
-      if (!this.isValidMoveForCannon(fromRow, fromCol, toRow, toCol, fromPiece)) return;
+      if (!this.isValidMoveForCannon(fromRow, fromCol, toRow, toCol, fromPiece, this.board)) return;
     }
     if (fromPiece?.type === 'xe') {
-      if (!this.isValidMoveForRook(fromRow, fromCol, toRow, toCol, fromPiece)) return;
+      if (!this.isValidMoveForRook(fromRow, fromCol, toRow, toCol, fromPiece, this.board)) return;
     }
     if (fromPiece?.type === 'ma') {
-      if (!this.isValidMoveForHorse(fromRow, fromCol, toRow, toCol, fromPiece)) return;
+      if (!this.isValidMoveForHorse(fromRow, fromCol, toRow, toCol, fromPiece, this.board)) return;
     }
     if (fromPiece?.type === 'tinh') {
-      if (!this.isValidMoveForElephant(fromRow, fromCol, toRow, toCol, fromPiece)) return;
+      if (!this.isValidMoveForElephant(fromRow, fromCol, toRow, toCol, fromPiece, this.board)) return;
     }
     if (fromPiece?.type === 'si') {
       if (!this.isValidMoveForAdvisor(fromRow, fromCol, toRow, toCol, fromPiece)) return;
@@ -109,17 +195,30 @@ export class BoardComponent implements OnInit {
     this.board[toRow][toCol] = this.board[fromRow][fromCol];
     this.board[fromRow][fromCol] = null;
 
-    // Logging move event && Change turn
-    if (fromRow !== toRow || fromCol !== toCol) {
-      console.log(`Di chuyển từ (${fromRow}, ${fromCol}) đến (${toRow}, ${toCol})`);
-      this.togglePlayer();
+    const from: Position = {
+      row: fromRow,
+      col: fromCol
     }
+    const to: Position = {
+      row: toRow,
+      col: toCol
+    }
+    const moveRequest: MoveRequest = {
+          from: from,
+          to: to
+        };
+
+    this.matchService.move(this.matchId, moveRequest);
+
+    console.log(`Di chuyển từ (${fromRow}, ${fromCol}) đến (${toRow}, ${toCol})`);
+    this.togglePlayer();
+
   }
 
   // Đổi lượt người chơi
   togglePlayer() {
     this.currentPlayer = this.currentPlayer === 'red' ? 'black' : 'red';
-    this.checkForfeit();
+    if (this.currentPlayer == this.playerView) this.checkForfeit();
   }
 
   isValidPawnMove(fromRow: number, fromCol: number, toRow: number, toCol: number, pawn: Piece): boolean {
@@ -168,7 +267,7 @@ export class BoardComponent implements OnInit {
     return true; // Nếu tất cả các điều kiện đều đúng, nước đi hợp lệ
   }
   
-  isValidMoveForCannon(fromRow: number, fromCol: number, toRow: number, toCol: number, cannon: Piece): boolean {
+  isValidMoveForCannon(fromRow: number, fromCol: number, toRow: number, toCol: number, cannon: Piece, board: (Piece | null)[][]): boolean {
     // Kiểm tra nếu quân di chuyển ngang hoặc dọc
     if (fromRow !== toRow && fromCol !== toCol) {
       return false; // Không hợp lệ nếu không di chuyển ngang hay dọc
@@ -181,7 +280,7 @@ export class BoardComponent implements OnInit {
     if (fromCol === toCol) {
       const step = toRow > fromRow ? 1 : -1;
       for (let row = fromRow + step; row !== toRow; row += step) {
-        if (this.board[row][fromCol]) {
+        if (board[row][fromCol]) {
           if (hasPieceInBetween) {
             return false; // Nếu đã có quân cờ ở giữa mà không ăn được, không hợp lệ
           }
@@ -194,7 +293,7 @@ export class BoardComponent implements OnInit {
     if (fromRow === toRow) {
       const step = toCol > fromCol ? 1 : -1;
       for (let col = fromCol + step; col !== toCol; col += step) {
-        if (this.board[fromRow][col]) {
+        if (board[fromRow][col]) {
           if (hasPieceInBetween) {
             return false; // Nếu đã có quân cờ ở giữa mà không ăn được, không hợp lệ
           }
@@ -204,7 +303,7 @@ export class BoardComponent implements OnInit {
     }
   
     // Kiểm tra quân đối phương nếu đang ăn
-    const targetPiece = this.board[toRow][toCol];
+    const targetPiece = board[toRow][toCol];
   
     // Nếu có quân cờ ở giữa và có quân địch ở điểm đến
     if (hasPieceInBetween && targetPiece) {
@@ -219,22 +318,22 @@ export class BoardComponent implements OnInit {
     return false; // Nếu không thỏa mãn các điều kiện trên, nước đi không hợp lệ
   }
   
-  isValidMoveForRook(fromRow: number, fromCol: number, toRow: number, toCol: number, rook: Piece): boolean {
+  isValidMoveForRook(fromRow: number, fromCol: number, toRow: number, toCol: number, rook: Piece, board: (Piece | null)[][]): boolean {
     if (fromRow === toRow) {
-      return this.isPathClear(fromRow, fromCol, toCol, true);
+      return this.isPathClear(fromRow, fromCol, toCol, true, board);
     } else if (fromCol === toCol) {
-      return this.isPathClear(fromCol, fromRow, toRow, false);
+      return this.isPathClear(fromCol, fromRow, toRow, false, board);
     }
     return false;
   }
 
   // Helper for Rook and Cannon
-  private isPathClear(fixed: number, start: number, end: number, isRowFixed: boolean): boolean {
+  private isPathClear(fixed: number, start: number, end: number, isRowFixed: boolean, board: (Piece | null)[][]): boolean {
     const min = Math.min(start, end);
     const max = Math.max(start, end);
 
     for (let i = min + 1; i < max; i++) {
-      if (isRowFixed ? this.board[fixed][i] : this.board[i][fixed]) {
+      if (isRowFixed ? board[fixed][i] : board[i][fixed]) {
         return false; // Path blocked
       }
     }
@@ -242,22 +341,22 @@ export class BoardComponent implements OnInit {
   }
 
   // Horse validation
-  isValidMoveForHorse(fromRow: number, fromCol: number, toRow: number, toCol: number, horse: Piece): boolean {
+  isValidMoveForHorse(fromRow: number, fromCol: number, toRow: number, toCol: number, horse: Piece, board: (Piece | null)[][]): boolean {
     const rowDiff = Math.abs(toRow - fromRow);
     const colDiff = Math.abs(toCol - fromCol);
 
     if (rowDiff === 2 && colDiff === 1) {
       const midRow = (fromRow + toRow) / 2;
-      return !this.board[midRow][fromCol]; // Check vertical leg
+      return !board[midRow][fromCol]; // Check vertical leg
     } else if (rowDiff === 1 && colDiff === 2) {
       const midCol = (fromCol + toCol) / 2;
-      return !this.board[fromRow][midCol]; // Check horizontal leg
+      return !board[fromRow][midCol]; // Check horizontal leg
     }
     return false;
   }
 
   // Elephant validation
-  isValidMoveForElephant(fromRow: number, fromCol: number, toRow: number, toCol: number, elephant: Piece): boolean {
+  isValidMoveForElephant(fromRow: number, fromCol: number, toRow: number, toCol: number, elephant: Piece, board: (Piece | null)[][]): boolean {
     // Must move exactly 2 diagonally
     if (Math.abs(toRow - fromRow) !== 2 || Math.abs(toCol - fromCol) !== 2) {
       return false;
@@ -270,7 +369,7 @@ export class BoardComponent implements OnInit {
     // Check midpoint
     const midRow = (fromRow + toRow) / 2;
     const midCol = (fromCol + toCol) / 2;
-    if (this.board[midRow][midCol]) return false;
+    if (board[midRow][midCol]) return false;
 
     return true;
   }
@@ -367,16 +466,16 @@ export class BoardComponent implements OnInit {
               if (this.isValidMoveForKing(row, col, kingRow, kingCol, piece)) return true;
               break;
             case 'phao':
-              if (this.isValidMoveForCannon(row, col, kingRow, kingCol, piece)) return true;
+              if (this.isValidMoveForCannon(row, col, kingRow, kingCol, piece, board)) return true;
               break;
             case 'xe':
-              if (this.isValidMoveForRook(row, col, kingRow, kingCol, piece)) return true;
+              if (this.isValidMoveForRook(row, col, kingRow, kingCol, piece, board)) return true;
               break;
             case 'ma':
-              if (this.isValidMoveForHorse(row, col, kingRow, kingCol, piece)) return true;
+              if (this.isValidMoveForHorse(row, col, kingRow, kingCol, piece, board)) return true;
               break;
             case 'tinh':
-              if (this.isValidMoveForElephant(row, col, kingRow, kingCol, piece)) return true;
+              if (this.isValidMoveForElephant(row, col, kingRow, kingCol, piece, board)) return true;
               break;
             case 'si':
               if (this.isValidMoveForAdvisor(row, col, kingRow, kingCol, piece)) return true;
@@ -392,7 +491,8 @@ export class BoardComponent implements OnInit {
   // Check if the current player has any legal moves left and forfeit if not
   private checkForfeit() {
     if (!this.hasLegalMoves(this.currentPlayer)) {
-      console.log('The current player is lost: No available move to make!')
+      // this.forfeitGame();
+      alert("Out of move!");
     }
   }
 
@@ -457,16 +557,16 @@ export class BoardComponent implements OnInit {
         if (!this.isValidMoveForKing(fromRow, fromCol, toRow, toCol, piece)) return false;
         break;
       case 'phao':
-        if (!this.isValidMoveForCannon(fromRow, fromCol, toRow, toCol, piece)) return false;
+        if (!this.isValidMoveForCannon(fromRow, fromCol, toRow, toCol, piece, this.board)) return false;
         break;
       case 'xe':
-        if (!this.isValidMoveForRook(fromRow, fromCol, toRow, toCol, piece)) return false;
+        if (!this.isValidMoveForRook(fromRow, fromCol, toRow, toCol, piece, this.board)) return false;
         break;
       case 'ma':
-        if (!this.isValidMoveForHorse(fromRow, fromCol, toRow, toCol, piece)) return false;
+        if (!this.isValidMoveForHorse(fromRow, fromCol, toRow, toCol, piece, this.board)) return false;
         break;
       case 'tinh':
-        if (!this.isValidMoveForElephant(fromRow, fromCol, toRow, toCol, piece)) return false;
+        if (!this.isValidMoveForElephant(fromRow, fromCol, toRow, toCol, piece, this.board)) return false;
         break;
       case 'si':
         if (!this.isValidMoveForAdvisor(fromRow, fromCol, toRow, toCol, piece)) return false;
