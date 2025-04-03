@@ -6,6 +6,8 @@ import { WebsocketService } from '../../service/websocket.service';
 import { QueueService } from '../../service/queue.service';
 import { ResponseObject } from '../../models/response.object';
 import { HttpErrorResponse } from '@angular/common/http';
+import { StompSubscription } from '@stomp/stompjs';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-play-pvp',
@@ -25,7 +27,13 @@ export class PlayPvpComponent {
   isSearched: boolean = false;
   modalRef!: NzModalRef; // Lưu trữ modal để có thể đóng
 
-  constructor(private modal: NzModalService, private wsService: WebsocketService, private queueService: QueueService) {}
+  private subscription: any;
+
+  constructor(
+    private modal: NzModalService, 
+    private wsService: WebsocketService, 
+    private queueService: QueueService,
+    private router: Router) {}
 
   fakePlayers = [
     { id: 'p1', name: 'Nguyễn Văn A' },
@@ -59,7 +67,7 @@ export class PlayPvpComponent {
     });
   }
 
-  playNow() {
+  async playNow() {
     this.modalRef = this.modal.create({
       nzTitle: 'Đang tìm đối thủ...',
       nzContent: 'Hệ thống đang ghép cặp, vui lòng chờ.',
@@ -67,29 +75,35 @@ export class PlayPvpComponent {
         {
           label: 'Hủy',
           type: 'default',
-          onClick: () => this.modalRef.close()
+          onClick: () => {
+            // Unsubscribe when canceling
+            if (this.subscription) {
+              this.subscription.unsubscribe();
+            }
+            this.modalRef.close()
+          }
         }
       ]
     });
 
     // Lắng nghe phản hồi từ server
-    this.wsService.listen(responseObject => {
-      console.log(responseObject)
+    this.subscription = this.wsService.listenToQueue(responseObject => {
       if (responseObject.data.status === 'MATCH_FOUND') {
         this.modalRef.close();
-        this.modal.success({
+        const successModal = this.modal.success({
           nzTitle: 'Ghép cặp thành công!',
+          nzOnOk: () => {
+            // Unsubscribe when success modal is closed
+            if (this.subscription) {
+              this.subscription.unsubscribe();
+              this.router.navigate(['/match/' + responseObject.data.matchId]);
+            }
+          }
         });
       }
     });
 
-    this.queueService.joinQueue().subscribe(
-      (response: ResponseObject) => {
-        console.log(response);
-      },
-      (error: HttpErrorResponse) => {
-        alert(error.message);
-      }
-    );
+    // Get token
+    const res = await this.queueService.joinQueue();
   }
 }
