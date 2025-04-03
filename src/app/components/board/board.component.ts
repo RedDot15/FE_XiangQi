@@ -6,7 +6,6 @@ import { CookieService } from '../../service/cookie.service';
 import { jwtDecode } from 'jwt-decode';
 import { WebsocketService } from '../../service/websocket.service';
 import { MoveRequest } from '../../models/request/move.request';
-import { from } from 'rxjs';
 import { Position } from '../../models/position.model';
 
 interface Piece {
@@ -115,16 +114,70 @@ export class BoardComponent implements OnInit {
     );
   }
 
-    // Function to decode JWT and extract uid using jwt-decode
-    private getUidFromToken(token: string): string | null {
-      try {
-        const decoded: any = jwtDecode(token); // Decode the token
-        return decoded.uid || null; // Extract uid
-      } catch (error) {
-        console.error('Error decoding JWT:', error);
-        return null;
+  // Function to decode JWT and extract uid using jwt-decode
+  private getUidFromToken(token: string): string | null {
+    try {
+      const decoded: any = jwtDecode(token); // Decode the token
+      return decoded.uid || null; // Extract uid
+    } catch (error) {
+      console.error('Error decoding JWT:', error);
+      return null;
+    }
+  }
+  
+  // Đổi lượt người chơi
+  togglePlayer() {
+    this.currentPlayer = this.currentPlayer === 'red' ? 'black' : 'red';
+    if (this.currentPlayer == this.playerView) this.checkForfeit();
+  }
+
+   // Check if the current player has any legal moves left and forfeit if not
+   private checkForfeit() {
+    if (!this.hasLegalMoves(this.currentPlayer)) {
+      // this.forfeitGame();
+      alert("Out of move!");
+    }
+  }
+
+  // Send API request to forfeit the game
+  // private forfeitGame() {
+  //   const forfeitData = {
+  //     player: this.currentPlayer,
+  //     reason: 'No legal moves available',
+  //   };
+
+  //   this.http.post('/api/forfeit', forfeitData).subscribe({
+  //     next: (response) => {
+  //       console.log('Forfeit successful:', response);
+  //       // Optionally reset the game or show a message
+  //       alert(`${this.currentPlayer} has forfeited the game due to no legal moves.`);
+  //     },
+  //     error: (error) => {
+  //       console.error('Forfeit failed:', error);
+  //     },
+  //   });
+  // }
+
+  // Check if the player has any legal moves
+  private hasLegalMoves(playerColor: 'red' | 'black'): boolean {
+    for (let fromRow = 0; fromRow < 10; fromRow++) {
+      for (let fromCol = 0; fromCol < 9; fromCol++) {
+        const piece = this.board[fromRow][fromCol]
+        if (piece && piece.color === playerColor) {
+          // Try every possible destination
+          for (let toRow = 0; toRow < 10; toRow++) {
+            for (let toCol = 0; toCol < 9; toCol++) {
+              // Check if the move is valid
+              if (this.isValidMove(fromRow, fromCol, toRow, toCol)) {
+                return true; // Found at least one legal move
+              }
+            }
+          }
+        }
       }
     }
+    return false; // No legal moves found
+  }
 
   onCellClick(row: number, col: number) {
     if (this.playerView !== this.currentPlayer) return;
@@ -144,81 +197,170 @@ export class BoardComponent implements OnInit {
   }
 
   movePiece(fromRow: number, fromCol: number, toRow: number, toCol: number) {
-    const fromPiece = this.board[fromRow][fromCol];
-    const toPiece = this.board[toRow][toCol];
-
-    if (!fromPiece) return;
-
-    if (fromPiece?.type === 'tot') {
-      if (!this.isValidPawnMove(fromRow, fromCol, toRow, toCol, fromPiece)) return;
-    }
-    if (fromPiece?.type === 'tuong') {
-      if (!this.isValidMoveForKing(fromRow, fromCol, toRow, toCol, fromPiece)) return;
-    }
-    if (fromPiece?.type === 'phao') {
-      if (!this.isValidMoveForCannon(fromRow, fromCol, toRow, toCol, fromPiece, this.board)) return;
-    }
-    if (fromPiece?.type === 'xe') {
-      if (!this.isValidMoveForRook(fromRow, fromCol, toRow, toCol, fromPiece, this.board)) return;
-    }
-    if (fromPiece?.type === 'ma') {
-      if (!this.isValidMoveForHorse(fromRow, fromCol, toRow, toCol, fromPiece, this.board)) return;
-    }
-    if (fromPiece?.type === 'tinh') {
-      if (!this.isValidMoveForElephant(fromRow, fromCol, toRow, toCol, fromPiece, this.board)) return;
-    }
-    if (fromPiece?.type === 'si') {
-      if (!this.isValidMoveForAdvisor(fromRow, fromCol, toRow, toCol, fromPiece)) return;
-    }
-    
-    // Cant take ally piece
-    if (toPiece && toPiece.color === fromPiece?.color) {
-      return;
-    }
-
-    // Simulate the move on a temporary board
-    const tempBoard = this.board.map(row => [...row]); // Deep copy of the board
-    tempBoard[toRow][toCol] = tempBoard[fromRow][fromCol];
-    tempBoard[fromRow][fromCol] = null;
-
-    // Check if kings face each other after the move
-    if (this.areKingsFacing(tempBoard)) {
-      return; // Move is invalid if kings face each other
-    }
-
-    // Check if the allied king is in check after the move
-    if (this.isKingInCheck(tempBoard, fromPiece.color)) {
-      return; // Move is invalid if it puts the allied king in check
-    }
+    if (!this.isValidMove(fromRow, fromCol, toRow, toCol)) return;
 
     // Move the selected piece
     this.board[toRow][toCol] = this.board[fromRow][fromCol];
     this.board[fromRow][fromCol] = null;
 
-    const from: Position = {
-      row: fromRow,
-      col: fromCol
-    }
-    const to: Position = {
-      row: toRow,
-      col: toCol
-    }
-    const moveRequest: MoveRequest = {
-          from: from,
-          to: to
-        };
+    // Define request
+    const from: Position = {row: fromRow, col: fromCol}
+    const to: Position = {row: toRow, col: toCol}
+    const moveRequest: MoveRequest = {from: from,to: to};
 
+    // Send move request
     this.matchService.move(this.matchId, moveRequest);
 
     console.log(`Di chuyển từ (${fromRow}, ${fromCol}) đến (${toRow}, ${toCol})`);
     this.togglePlayer();
 
   }
+  
 
-  // Đổi lượt người chơi
-  togglePlayer() {
-    this.currentPlayer = this.currentPlayer === 'red' ? 'black' : 'red';
-    if (this.currentPlayer == this.playerView) this.checkForfeit();
+  // Helper to check if a move is valid (factoring in all rules)
+  private isValidMove(fromRow: number, fromCol: number, toRow: number, toCol: number): boolean {
+    const fromPiece = this.board[fromRow][fromCol];
+    const toPiece = this.board[toRow][toCol]; 
+    
+    if (!fromPiece) return false;
+
+    // Can't take ally piece
+    if (toPiece && toPiece.color === fromPiece.color) return false;
+
+    // Piece-specific validation
+    switch (fromPiece.type) {
+      case 'tot':
+        if (!this.isValidPawnMove(fromRow, fromCol, toRow, toCol, fromPiece)) return false;
+        break;
+      case 'tuong':
+        if (!this.isValidMoveForKing(fromRow, fromCol, toRow, toCol, fromPiece)) return false;
+        break;
+      case 'phao':
+        if (!this.isValidMoveForCannon(fromRow, fromCol, toRow, toCol, fromPiece, this.board)) return false;
+        break;
+      case 'xe':
+        if (!this.isValidMoveForRook(fromRow, fromCol, toRow, toCol, fromPiece, this.board)) return false;
+        break;
+      case 'ma':
+        if (!this.isValidMoveForHorse(fromRow, fromCol, toRow, toCol, fromPiece, this.board)) return false;
+        break;
+      case 'tinh':
+        if (!this.isValidMoveForElephant(fromRow, fromCol, toRow, toCol, fromPiece, this.board)) return false;
+        break;
+      case 'si':
+        if (!this.isValidMoveForAdvisor(fromRow, fromCol, toRow, toCol, fromPiece)) return false;
+        break;
+    }
+
+    // Simulate the move
+    const tempBoard = this.board.map(row => [...row]);
+    tempBoard[toRow][toCol] = tempBoard[fromRow][fromCol];
+    tempBoard[fromRow][fromCol] = null;
+
+    // Check kings facing and king in check
+    if (this.areKingsFacing(tempBoard)) return false;
+    if (this.isKingInCheck(tempBoard, fromPiece.color)) return false;
+
+    return true;
+  }
+
+  // Check if kings are facing each other
+  private areKingsFacing(board: (Piece | null)[][]): boolean {
+    let redKingRow = -1;
+    let redKingCol = -1;
+    let blackKingRow = -1;
+    let blackKingCol = -1;
+
+    // Find the positions of the two kings
+    for (let row = 0; row < 10; row++) {
+      for (let col = 3; col <= 5; col++) { // Kings are in columns 3-5
+        const piece = board[row][col];
+        if (piece?.type === 'tuong' && piece.color === 'red') {
+          redKingRow = row;
+          redKingCol = col;
+        } else if (piece?.type === 'tuong' && piece.color === 'black') {
+          blackKingRow = row;
+          blackKingCol = col;
+        }
+      }
+    }
+
+    // Ensure both kings were found
+    if (redKingRow === -1 || blackKingRow === -1) {
+      return false; // One or both kings missing (shouldn't happen in a valid game)
+    }
+
+    // Kings must be in the same column
+    if (redKingCol !== blackKingCol) {
+      return false;
+    }
+
+    // Check if there are any pieces between them
+    const minRow = Math.min(redKingRow, blackKingRow);
+    const maxRow = Math.max(redKingRow, blackKingRow);
+    for (let row = minRow + 1; row < maxRow; row++) {
+      if (board[row][redKingCol] !== null) {
+        return false; // Piece blocking the kings
+      }
+    }
+
+    // No pieces blocking, kings are facing each other
+    return true;
+  }
+
+  // Check if the allied king is in check
+  private isKingInCheck(board: (Piece | null)[][], allyColor: 'red' | 'black'): boolean {
+    // Find the allied king's position
+    let kingRow = -1;
+    let kingCol = -1;
+    for (let row = 0; row < 10; row++) {
+      for (let col = 3; col <= 5; col++) { // Kings are in columns 3-5
+        const piece = board[row][col];
+        if (piece?.type === 'tuong' && piece.color === allyColor) {
+          kingRow = row;
+          kingCol = col;
+          break;
+        }
+      }
+      if (kingRow !== -1) break;
+    }
+
+    if (kingRow === -1) return false; // King not found (shouldn't happen)
+
+    // Check if any enemy piece can move to the king's position
+    const enemyColor = allyColor === 'red' ? 'black' : 'red';
+    for (let row = 0; row < 10; row++) {
+      for (let col = 0; col < 9; col++) {   
+        const piece = board[row][col];
+        if (piece && piece.color === enemyColor) {
+          switch (piece.type) {
+            case 'tot':
+              if (this.isValidPawnMove(row, col, kingRow, kingCol, piece)) return true;
+              break;
+            case 'tuong':
+              if (this.isValidMoveForKing(row, col, kingRow, kingCol, piece)) return true;
+              break;
+            case 'phao':
+              if (this.isValidMoveForCannon(row, col, kingRow, kingCol, piece, board)) return true;
+              break;
+            case 'xe':
+              if (this.isValidMoveForRook(row, col, kingRow, kingCol, piece, board)) return true;
+              break;
+            case 'ma':
+              if (this.isValidMoveForHorse(row, col, kingRow, kingCol, piece, board)) return true;
+              break;
+            case 'tinh':
+              if (this.isValidMoveForElephant(row, col, kingRow, kingCol, piece, board)) return true;
+              break;
+            case 'si':
+              if (this.isValidMoveForAdvisor(row, col, kingRow, kingCol, piece)) return true;
+              break;
+          }
+        }
+      }
+    }
+
+    return false; // No enemy piece can capture the king
   }
 
   isValidPawnMove(fromRow: number, fromCol: number, toRow: number, toCol: number, pawn: Piece): boolean {
@@ -389,194 +531,4 @@ export class BoardComponent implements OnInit {
     return true;
   }
 
-  // Check if kings are facing each other
-  private areKingsFacing(board: (Piece | null)[][]): boolean {
-    let redKingRow = -1;
-    let redKingCol = -1;
-    let blackKingRow = -1;
-    let blackKingCol = -1;
-
-    // Find the positions of the two kings
-    for (let row = 0; row < 10; row++) {
-      for (let col = 3; col <= 5; col++) { // Kings are in columns 3-5
-        const piece = board[row][col];
-        if (piece?.type === 'tuong' && piece.color === 'red') {
-          redKingRow = row;
-          redKingCol = col;
-        } else if (piece?.type === 'tuong' && piece.color === 'black') {
-          blackKingRow = row;
-          blackKingCol = col;
-        }
-      }
-    }
-
-    // Ensure both kings were found
-    if (redKingRow === -1 || blackKingRow === -1) {
-      return false; // One or both kings missing (shouldn't happen in a valid game)
-    }
-
-    // Kings must be in the same column
-    if (redKingCol !== blackKingCol) {
-      return false;
-    }
-
-    // Check if there are any pieces between them
-    const minRow = Math.min(redKingRow, blackKingRow);
-    const maxRow = Math.max(redKingRow, blackKingRow);
-    for (let row = minRow + 1; row < maxRow; row++) {
-      if (board[row][redKingCol] !== null) {
-        return false; // Piece blocking the kings
-      }
-    }
-
-    // No pieces blocking, kings are facing each other
-    return true;
-  }
-
-  // Check if the allied king is in check
-  private isKingInCheck(board: (Piece | null)[][], allyColor: 'red' | 'black'): boolean {
-    // Find the allied king's position
-    let kingRow = -1;
-    let kingCol = -1;
-    for (let row = 0; row < 10; row++) {
-      for (let col = 3; col <= 5; col++) { // Kings are in columns 3-5
-        const piece = board[row][col];
-        if (piece?.type === 'tuong' && piece.color === allyColor) {
-          kingRow = row;
-          kingCol = col;
-          break;
-        }
-      }
-      if (kingRow !== -1) break;
-    }
-
-    if (kingRow === -1) return false; // King not found (shouldn't happen)
-
-    // Check if any enemy piece can move to the king's position
-    const enemyColor = allyColor === 'red' ? 'black' : 'red';
-    for (let row = 0; row < 10; row++) {
-      for (let col = 0; col < 9; col++) {   
-        const piece = board[row][col];
-        if (piece && piece.color === enemyColor) {
-          switch (piece.type) {
-            case 'tot':
-              if (this.isValidPawnMove(row, col, kingRow, kingCol, piece)) return true;
-              break;
-            case 'tuong':
-              if (this.isValidMoveForKing(row, col, kingRow, kingCol, piece)) return true;
-              break;
-            case 'phao':
-              if (this.isValidMoveForCannon(row, col, kingRow, kingCol, piece, board)) return true;
-              break;
-            case 'xe':
-              if (this.isValidMoveForRook(row, col, kingRow, kingCol, piece, board)) return true;
-              break;
-            case 'ma':
-              if (this.isValidMoveForHorse(row, col, kingRow, kingCol, piece, board)) return true;
-              break;
-            case 'tinh':
-              if (this.isValidMoveForElephant(row, col, kingRow, kingCol, piece, board)) return true;
-              break;
-            case 'si':
-              if (this.isValidMoveForAdvisor(row, col, kingRow, kingCol, piece)) return true;
-              break;
-          }
-        }
-      }
-    }
-
-    return false; // No enemy piece can capture the king
-  }
-
-  // Check if the current player has any legal moves left and forfeit if not
-  private checkForfeit() {
-    if (!this.hasLegalMoves(this.currentPlayer)) {
-      // this.forfeitGame();
-      alert("Out of move!");
-    }
-  }
-
-  // Send API request to forfeit the game
-  // private forfeitGame() {
-  //   const forfeitData = {
-  //     player: this.currentPlayer,
-  //     reason: 'No legal moves available',
-  //   };
-
-  //   this.http.post('/api/forfeit', forfeitData).subscribe({
-  //     next: (response) => {
-  //       console.log('Forfeit successful:', response);
-  //       // Optionally reset the game or show a message
-  //       alert(`${this.currentPlayer} has forfeited the game due to no legal moves.`);
-  //     },
-  //     error: (error) => {
-  //       console.error('Forfeit failed:', error);
-  //     },
-  //   });
-  // }
-
-  // Check if the player has any legal moves
-  private hasLegalMoves(playerColor: 'red' | 'black'): boolean {
-    for (let fromRow = 0; fromRow < 10; fromRow++) {
-      for (let fromCol = 0; fromCol < 9; fromCol++) {
-        const piece = this.board[fromRow][fromCol];
-        if (piece && piece.color === playerColor) {
-          // Try every possible destination
-          for (let toRow = 0; toRow < 10; toRow++) {
-            for (let toCol = 0; toCol < 9; toCol++) {
-              // Simulate the move
-              const tempBoard = this.board.map(row => [...row]);
-              tempBoard[toRow][toCol] = tempBoard[fromRow][fromCol];
-              tempBoard[fromRow][fromCol] = null;
-
-              // Check if the move is valid
-              if (this.isValidMove(fromRow, fromCol, toRow, toCol, piece, tempBoard)) {
-                return true; // Found at least one legal move
-              }
-            }
-          }
-        }
-      }
-    }
-    return false; // No legal moves found
-  }
-
-  // Helper to check if a move is valid (factoring in all rules)
-  private isValidMove(fromRow: number, fromCol: number, toRow: number, toCol: number, piece: Piece, tempBoard: (Piece | null)[][]): boolean {
-    const toPiece = this.board[toRow][toCol]; // Use original board for toPiece check
-
-    // Can't take ally piece
-    if (toPiece && toPiece.color === piece.color) return false;
-
-    // Piece-specific validation
-    switch (piece.type) {
-      case 'tot':
-        if (!this.isValidPawnMove(fromRow, fromCol, toRow, toCol, piece)) return false;
-        break;
-      case 'tuong':
-        if (!this.isValidMoveForKing(fromRow, fromCol, toRow, toCol, piece)) return false;
-        break;
-      case 'phao':
-        if (!this.isValidMoveForCannon(fromRow, fromCol, toRow, toCol, piece, this.board)) return false;
-        break;
-      case 'xe':
-        if (!this.isValidMoveForRook(fromRow, fromCol, toRow, toCol, piece, this.board)) return false;
-        break;
-      case 'ma':
-        if (!this.isValidMoveForHorse(fromRow, fromCol, toRow, toCol, piece, this.board)) return false;
-        break;
-      case 'tinh':
-        if (!this.isValidMoveForElephant(fromRow, fromCol, toRow, toCol, piece, this.board)) return false;
-        break;
-      case 'si':
-        if (!this.isValidMoveForAdvisor(fromRow, fromCol, toRow, toCol, piece)) return false;
-        break;
-    }
-
-    // Check kings facing and king in check
-    if (this.areKingsFacing(tempBoard)) return false;
-    if (this.isKingInCheck(tempBoard, piece.color)) return false;
-
-    return true;
-  }
 } 
