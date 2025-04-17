@@ -1,12 +1,9 @@
-import { Component } from '@angular/core';
+import { Component, HostListener } from '@angular/core';
 import { NgFor, NgIf } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { NzModalModule, NzModalService,NzModalRef } from 'ng-zorro-antd/modal';
 import { WebsocketService } from '../../service/websocket.service';
 import { QueueService } from '../../service/queue.service';
-import { ResponseObject } from '../../models/response.object';
-import { HttpErrorResponse } from '@angular/common/http';
-import { StompSubscription } from '@stomp/stompjs';
 import { Router } from '@angular/router';
 
 @Component({
@@ -68,20 +65,26 @@ export class PlayPvpComponent {
   }
 
   async playNow() {
+    const handleModalClose = async () => {
+      const res = await this.queueService.unQueue();
+      if (res.status === 'ok') {
+        // Unsubscribe and close modal only when unQueue success
+        if (this.subscription) {
+          this.subscription.unsubscribe();
+        }
+        this.modalRef.close();
+      }
+    };
+
     this.modalRef = this.modal.create({
       nzTitle: 'Đang tìm đối thủ...',
       nzContent: 'Hệ thống đang ghép cặp, vui lòng chờ.',
+      nzOnCancel: handleModalClose,
       nzFooter: [
         {
           label: 'Hủy',
           type: 'default',
-          onClick: () => {
-            // Unsubscribe when canceling
-            if (this.subscription) {
-              this.subscription.unsubscribe();
-            }
-            this.modalRef.close()
-          }
+          onClick: handleModalClose,
         }
       ]
     });
@@ -106,4 +109,15 @@ export class PlayPvpComponent {
     // Get token
     const res = await this.queueService.joinQueue();
   }
+
+  @HostListener('window:beforeunload', ['$event'])
+  async beforeUnloadHandler(event: Event) {
+    // Gọi unQueue để xóa người chơi khỏi hàng đợi
+    await this.queueService.unQueue();
+    // Hủy subscription nếu có
+    if (this.subscription) {
+      this.subscription.unsubscribe();
+    }
+  }
+
 }
