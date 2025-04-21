@@ -1,1 +1,17 @@
-<app-board></app-board>
+<div class="match-container">
+    <div class="board-container">
+      <app-board
+        [board]="board"
+        [currentPlayer]="currentPlayer"
+        [playerView]="playerView"
+        (move)="handleMove($event)"
+        ></app-board>
+    </div>
+    <app-game-sidebar
+      [redPlayerTotalTimeLeft]="redPlayerTotalTimeLeft"
+      [blackPlayerTotalTimeLeft]="blackPlayerTotalTimeLeft"
+      [currentPlayer]="currentPlayer"
+      [playerView]="playerView"
+      [matchId]="matchId">
+    </app-game-sidebar>
+  </div>

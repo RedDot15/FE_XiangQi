@@ -1,0 +1,9 @@
+.match-container {
+    display: flex;
+    gap: 20px;
+    padding: 20px;
+  }
+  
+  .board-container {
+    flex: 1;
+  }
