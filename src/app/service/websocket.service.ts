@@ -1,10 +1,10 @@
 import { Injectable, OnDestroy } from '@angular/core';
 import {CompatClient, Stomp} from '@stomp/stompjs';
 import {StompSubscription} from '@stomp/stompjs/src/stomp-subscription';
-import { ResponseObject } from '../models/response.object';
 import { CookieService } from './cookie.service';
 import { jwtDecode } from 'jwt-decode';
 import { environment } from '../../environments/environment';
+import { ResponseObject } from '../models/response/response.object';
 
 export type ListenerCallBack = (message: ResponseObject) => void;
 

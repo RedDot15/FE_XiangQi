@@ -1,8 +1,8 @@
 import { Injectable } from '@angular/core';
 import { HttpClientService } from './http-client.service';
-import { AuthModel } from '../models/auth.model';
 import { CookieService } from './cookie.service';
 import { Router } from '@angular/router';
+import { AuthRequest } from '../models/request/auth.request';
 
 @Injectable({
   providedIn: 'root'
@@ -13,8 +13,9 @@ export class AuthService {
     private cookieService: CookieService,
     private router: Router) { }
 
-  auth = async (auth: AuthModel) => await this.httpClient.post('api/auth/token', auth);
-  register = async (auth: AuthModel) => await this.httpClient.post('api/player/register', auth);
+  auth = async (auth: AuthRequest) => await this.httpClient.post('api/auth/token', auth);
+  
+  register = async (auth: AuthRequest) => await this.httpClient.post('api/player/register', auth);
   
   authenticated = async () => {
     const token = this.cookieService.getToken();

@@ -1,8 +1,4 @@
 import { Injectable } from '@angular/core';
-import { Observable} from 'rxjs';
-import { ResponseObject } from '../models/response.object';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { CookieService } from './cookie.service';
 import { HttpClientService } from './http-client.service';
 
 @Injectable({

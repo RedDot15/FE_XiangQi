@@ -1,17 +1,10 @@
-
-    <!-- <canvas #chessboard class="board" width="450" height="500">
-        </canvas> -->
-        <div class="board" [ngClass]="{'board-rotate': playerView === 'black'}" >
-          <div *ngFor="let row of board; let rowIndex = index" class="row">
-            <div *ngFor="let cell of row; let colIndex = index" class="cell"  (click)="onCellClick(rowIndex, colIndex)" >
-                <img *ngIf="cell" [src]="'/assets/board_images/' + cell.type + '_' + cell.color + '.png'"  class="piece"  
-                      [ngClass]="cell.color"  
-                      [ngClass]="{'selected': selectedPiece?.row === rowIndex && selectedPiece?.col === colIndex , 
-                                  'piece_reverse':playerView == 'black'}">            
-            </div>
-          </div>
-        </div>
-        <!-- <div class="text-center mt-2">
-          <button (click)="playerView = playerView === 'red' ? 'black' : 'red';">Đổi góc nhìn</button>
-          <div>Lượt chơi {{currentPlayer}}</div>
-        </div> -->
+<div class="board" [ngClass]="{'board-rotate': playerView === 'black'}">
+  <div *ngFor="let row of board; let rowIndex = index" class="row">
+    <div *ngFor="let cell of row; let colIndex = index" class="cell" (click)="onCellClick(rowIndex, colIndex)">
+      <img *ngIf="cell" [src]="'/assets/board_images/' + cell.type + '_' + cell.color + '.png'" class="piece"
+           [ngClass]="cell.color"
+           [ngClass]="{'selected': selectedPiece?.row === rowIndex && selectedPiece?.col === colIndex, 
+                      'piece_reverse': playerView == 'black'}">
+    </div>
+  </div>
+</div>

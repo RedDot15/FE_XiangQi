@@ -1,0 +1,139 @@
+.game-sidebar {
+  width: 300px;
+  padding: 15px;
+  background-color: #f8f9fa;
+  border-left: 1px solid #dee2e6;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  height: 100%; /* Chiếm toàn bộ chiều cao của container cha */
+  box-sizing: border-box;
+}
+
+.user-section {
+  padding: 10px;
+  background-color: #e9ecef;
+  border-radius: 5px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.opponent-section {
+  background-color: #f5e6e6;
+}
+
+.player-section {
+  background-color: #e6f5e6;
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.username {
+  font-weight: bold;
+  font-size: 1rem;
+}
+
+.rating {
+  font-size: 0.9rem;
+  color: #6c757d;
+}
+
+.status-indicator {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background-color: #ccc;
+}
+
+.status-indicator.active {
+  background-color: #28a745;
+}
+
+.timers {
+  display: flex;
+  gap: 10px;
+  font-size: 1rem;
+  font-weight: bold;
+}
+
+.per-move-timer {
+  color: #dc3545;
+}
+
+.total-timer {
+  color: #343a40;
+}
+
+.chat-section {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.chat-section h4 {
+  margin-bottom: 10px;
+  font-size: 1.2rem;
+  color: #343a40;
+}
+
+.chat-messages {
+  flex: 1;
+  overflow-y: auto;
+  border: 1px solid #dee2e6;
+  padding: 10px;
+  background-color: #fff;
+  border-radius: 5px;
+}
+
+.chat-message {
+  margin-bottom: 8px;
+  display: flex;
+  gap: 5px;
+  align-items: baseline;
+}
+
+.sender {
+  font-weight: bold;
+  color: #007bff;
+}
+
+.message {
+  flex: 1;
+}
+
+.timestamp {
+  color: #6c757d;
+  font-size: 0.85rem;
+}
+
+.chat-input {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.chat-input input {
+  flex: 1;
+  padding: 8px;
+  border: 1px solid #dee2e6;
+  border-radius: 5px;
+  font-size: 0.9rem;
+}
+
+.chat-input button {
+  padding: 8px 16px;
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.chat-input button:hover {
+  background-color: #0056b3;
+}

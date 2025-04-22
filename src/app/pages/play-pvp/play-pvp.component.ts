@@ -92,17 +92,12 @@ export class PlayPvpComponent {
     // Lắng nghe phản hồi từ server
     this.subscription = this.wsService.listenToQueue(responseObject => {
       if (responseObject.data.status === 'MATCH_FOUND') {
+        // Đóng modal tìm trận
         this.modalRef.close();
-        const successModal = this.modal.success({
-          nzTitle: 'Ghép cặp thành công!',
-          nzOnOk: () => {
-            // Unsubscribe when success modal is closed
-            if (this.subscription) {
-              this.subscription.unsubscribe();
-              this.router.navigate(['/match/' + responseObject.data.matchId]);
-            }
-          }
-        });
+        // Unsubscribe 
+        this.subscription.unsubscribe();
+        // Navigate
+        this.router.navigate(['/match/' + responseObject.data.matchId]);
       }
     });
 

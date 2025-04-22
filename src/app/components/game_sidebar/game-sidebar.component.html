@@ -1,0 +1,40 @@
+<div class="game-sidebar">
+  <div class="user-section opponent-section">
+    <div class="user-info">
+      <span class="username">{{ opponentName }}</span>
+      <span class="rating">({{ opponentRating }})</span>
+      <span class="status-indicator" [ngClass]="{'active': currentPlayer !== playerView}"></span>
+    </div>
+    <div class="timers">
+      <span class="per-move-timer">{{ formatTime(playerView === 'red' ? blackPlayerTurnTimeLeft : redPlayerTurnTimeLeft) }}</span>
+      <span class="total-timer">{{ formatTime(playerView === 'red' ? blackPlayerTotalTimeLeft : redPlayerTotalTimeLeft) }}</span>
+    </div>
+  </div>
+
+  <div class="chat-section">
+    <h4>Chat</h4>
+    <div class="chat-messages">
+      <div *ngFor="let message of chatMessages" class="chat-message">
+        <span class="sender">{{ message.sender }}:</span>
+        <span class="message">{{ message.message }}</span>
+        <span class="timestamp">[{{ message.timestamp }}]</span>
+      </div>
+    </div>
+    <div class="chat-input">
+      <input type="text" [(ngModel)]="newMessage" (keyup.enter)="sendMessage()" placeholder="Nhập tin nhắn...">
+      <button (click)="sendMessage()">Gửi</button>
+    </div>
+  </div>
+
+  <div class="user-section player-section">
+    <div class="user-info">
+      <span class="username">{{ playerName }}</span>
+      <span class="rating">({{ playerRating }})</span>
+      <span class="status-indicator" [ngClass]="{'active': currentPlayer === playerView}"></span>
+    </div>
+    <div class="timers">
+      <span class="per-move-timer">{{ formatTime(playerView === 'red' ?  redPlayerTurnTimeLeft : blackPlayerTurnTimeLeft) }}</span>
+      <span class="total-timer">{{ formatTime(playerView === 'red' ? redPlayerTotalTimeLeft : blackPlayerTotalTimeLeft) }}</span>
+    </div>
+  </div>
+</div>

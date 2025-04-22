@@ -1,10 +1,10 @@
 import { NgIf } from '@angular/common';
 import { Component } from '@angular/core';
-import { AuthModel } from '../../models/auth.model';
 import { AuthService } from '../../service/auth.service';
 import { CookieService } from '../../service/cookie.service';
 import { Router } from '@angular/router';
-import { FormsModule, NgModel } from '@angular/forms';
+import { FormsModule } from '@angular/forms';
+import { AuthRequest } from '../../models/request/auth.request';
 @Component({
   selector: 'app-login',
   standalone: true,
@@ -16,7 +16,7 @@ import { FormsModule, NgModel } from '@angular/forms';
   styleUrl: './login.component.css'
 })
 export class LoginComponent {
-    auth: AuthModel = {
+    auth: AuthRequest = {
       username: '',
       password: ''
     };
