@@ -17,11 +17,17 @@ interface ChatMessage {
   styleUrl: './game-sidebar.component.css'
 })
 export class GameSidebarComponent {
-  @Input() redPlayerTotalTimeLeft: number = 900; // 15 minutes in seconds
-  @Input() blackPlayerTotalTimeLeft: number = 900;
   @Input() currentPlayer: 'red' | 'black' = 'red';
   @Input() playerView: 'red' | 'black' = 'red';
   @Input() matchId: string = '-1';
+  @Input() opponentName: string = "Opponent";
+  @Input() playerName: string = "Me";
+  @Input() opponentRating: number = 1200;
+  @Input() playerRating: number = 1200;
+  @Input() redPlayerTotalTimeLeft: number = 900; // 15 minutes in seconds
+  @Input() blackPlayerTotalTimeLeft: number = 900;
+  @Input() redPlayerTurnTimeLeft: number = 2*60; // 2 minutes in seconds
+  @Input() blackPlayerTurnTimeLeft: number = 2*60;
 
   chatMessages: ChatMessage[] = [];
   newMessage: string = '';

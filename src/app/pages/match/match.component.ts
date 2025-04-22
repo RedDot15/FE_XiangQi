@@ -28,8 +28,14 @@ export class MatchComponent implements OnInit, OnDestroy {
   currentPlayer: 'red' | 'black' = 'red';
   playerView: 'red' | 'black' = 'red';
   matchId: string = '-1';
-  redPlayerTotalTimeLeft: number = 900; // 15 minutes in seconds
-  blackPlayerTotalTimeLeft: number = 900;
+  opponentName: string = "Opponent";
+  playerName: string = "Me";
+  opponentRating: number = 1200;
+  playerRating: number = 1200;
+  redPlayerTotalTimeLeft: number = 15*60; // 15 minutes in seconds
+  blackPlayerTotalTimeLeft: number = 15*60;
+  redPlayerTurnTimeLeft: number = 2*60; // 2 minutes in seconds
+  blackPlayerTurnTimeLeft: number = 2*60;
   lastMoveTime: number | null = null;
 
   private timerInterval: any;
@@ -69,15 +75,24 @@ export class MatchComponent implements OnInit, OnDestroy {
     if (this.matchId) {
       // Get match state
       const matchState = await this.matchService.getMatch(this.matchId);
+      // Get player's faction
+      const isRedPlayer = matchState.data.redPlayerId == uid;
+
       // Convert boardState 
       this.board = this.convertBoardState(matchState.data.boardState);
       // Initial view
-      this.playerView = matchState.data.redPlayerId == uid ? 'red' : 'black';
+      this.playerView = isRedPlayer ? 'red' : 'black';
       // Get current turn
       this.currentPlayer = matchState.data.turn == uid ? this.playerView : this.playerView == 'red' ? 'black' : 'red';
+      // Get players name
+      this.opponentName = isRedPlayer ? matchState.data.blackPlayerName : matchState.data.redPlayerName;
+      this.playerName = isRedPlayer ? matchState.data.redPlayerName : matchState.data.blackPlayerName;
+      // Get players rating
+      this.opponentRating = isRedPlayer ? matchState.data.blackPlayerRating : matchState.data.redPlayerRating;
+      this.playerRating = isRedPlayer ? matchState.data.redPlayerRating : matchState.data.blackPlayerRating;
       // Get players time left
-      this.redPlayerTotalTimeLeft = matchState.data.redPlayerTimeLeft / 1000;
-      this.blackPlayerTotalTimeLeft = matchState.data.blackPlayerTimeLeft / 1000;
+      this.redPlayerTotalTimeLeft = Math.round(matchState.data.redPlayerTimeLeft / 1000) ;
+      this.blackPlayerTotalTimeLeft = Math.round(matchState.data.blackPlayerTimeLeft / 1000);
       // Get lastMoveTime
       this.lastMoveTime = matchState.data.lastMoveTime;
 
@@ -179,15 +194,14 @@ export class MatchComponent implements OnInit, OnDestroy {
   setupTimer() {
     // Get elapsed time 
     const elapsed = Math.floor((Date.now() - new Date(this.lastMoveTime!).getTime()) / 1000);
-    console.log(Date.now());
-    console.log('lastMoveTime: ' + this.lastMoveTime);
-    console.log('elapsed: ' + elapsed);
     // Setup time left of current player
-    if (this.currentPlayer === 'red')
+    if (this.currentPlayer === 'red') {
       this.redPlayerTotalTimeLeft = this.redPlayerTotalTimeLeft - elapsed;
+      this.redPlayerTurnTimeLeft = this.redPlayerTurnTimeLeft - elapsed;
+    }
     else 
       this.blackPlayerTotalTimeLeft = this.blackPlayerTotalTimeLeft - elapsed;
-    // Start the timer
+    this.blackPlayerTurnTimeLeft = this.blackPlayerTurnTimeLeft - elapsed;
   }
 
   startTimer() {
@@ -197,18 +211,26 @@ export class MatchComponent implements OnInit, OnDestroy {
     this.timerInterval = setInterval(() => {
       if (this.currentPlayer === 'red') {
         this.redPlayerTotalTimeLeft = Math.max(0, this.redPlayerTotalTimeLeft - 1);
+        this.redPlayerTurnTimeLeft = Math.max(0, this.redPlayerTurnTimeLeft - 1);
       } else {
         this.blackPlayerTotalTimeLeft = Math.max(0, this.blackPlayerTotalTimeLeft - 1);
+        this.blackPlayerTurnTimeLeft = Math.max(0, this.blackPlayerTurnTimeLeft - 1);
       }
       if (this.redPlayerTotalTimeLeft <= 0 || this.blackPlayerTotalTimeLeft <= 0) {
-        clearInterval(this.timerInterval);
         alert(`${this.currentPlayer} hết thời gian!`);
       }
     }, 1000);
   }
 
   togglePlayer() {
+    // Reset turn-timer
+    if (this.currentPlayer === 'red') 
+      this.redPlayerTurnTimeLeft = 2 * 60;
+    else 
+      this.blackPlayerTurnTimeLeft = 2 * 60;
+    // Switch turn
     this.currentPlayer = this.currentPlayer === 'red' ? 'black' : 'red';
+    // Check forfeit if out-of-move
     if (this.currentPlayer == this.playerView) this.checkForfeit();
   }
 
