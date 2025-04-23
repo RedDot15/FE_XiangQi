@@ -12,7 +12,7 @@ interface ChatMessage {
 @Component({
   selector: 'app-game-sidebar',
   standalone: true,
-  imports: [NgIf, NgFor, FormsModule, NgClass],
+  imports: [NgFor, FormsModule, NgClass],
   templateUrl: './game-sidebar.component.html',
   styleUrl: './game-sidebar.component.css'
 })

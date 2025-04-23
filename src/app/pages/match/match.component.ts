@@ -10,6 +10,8 @@ import { MoveRequest } from '../../models/request/move.request';
 import { MoveValidatorService } from '../../service/move-validator.service';
 import { MatchWaitingModalComponent } from '../../components/match-waiting-modal/match-waiting-modal.component';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
+import { MatchResultModalComponent } from '../../components/match-result-modal/match-result-modal.component';
+import { MatchCancelModalComponent } from '../../components/match-cancel-modal/match-cancel-modal.component';
 
 interface Piece {
   type: 'xe' | 'ma' | 'tinh' | 'si' | 'tuong' | 'phao' | 'tot';
@@ -19,7 +21,7 @@ interface Piece {
 @Component({
   selector: 'app-match',
   standalone: true,
-  imports: [BoardComponent, GameSidebarComponent, MatchWaitingModalComponent],
+  imports: [BoardComponent, GameSidebarComponent, MatchWaitingModalComponent, MatchResultModalComponent, MatchCancelModalComponent],
   templateUrl: './match.component.html',
   styleUrl: './match.component.css'
 })
@@ -34,8 +36,8 @@ export class MatchComponent implements OnInit, OnDestroy {
   playerRating: number = 1200;
   redPlayerTotalTimeLeft: number = 15*60; // 15 minutes in seconds
   blackPlayerTotalTimeLeft: number = 15*60;
-  redPlayerTurnTimeLeft: number = 2*60; // 2 minutes in seconds
-  blackPlayerTurnTimeLeft: number = 2*60;
+  redPlayerTurnTimeLeft: number = 1*60; // 2 minutes in seconds
+  blackPlayerTurnTimeLeft: number = 1*60;
   lastMoveTime: number | null = null;
 
   private timerInterval: any;
@@ -110,6 +112,17 @@ export class MatchComponent implements OnInit, OnDestroy {
             this.board[move.from.row][move.from.col] = null;
             // Switch turn
             this.togglePlayer();
+          } else if (responseObject.status === 'ok' && responseObject.message == "Match finished.") {
+            const res = responseObject.data;
+            // Open match result notification modal
+            this.dialog.open(MatchResultModalComponent, {
+              disableClose: true,
+              width: '400px', // Đặt kích thước modal
+              data: {
+                result: res.result, // "WIN" or "LOSE"
+                ratingChange: res.ratingChange // +10 or -10
+              }
+            });  
           }
         });
       } else {
@@ -122,7 +135,7 @@ export class MatchComponent implements OnInit, OnDestroy {
         // Listen for match ready 
         this.subscription = this.wsService.listenToMatch(responseObject => {
           if (responseObject.status === 'ok' && responseObject.message == 'The match is start.') {
-            // Close the modal that blocks the player
+            // Close the waiting opponent modal
             if (this.dialogRef) {
               this.dialogRef.close();
               this.dialogRef = null;
@@ -146,9 +159,32 @@ export class MatchComponent implements OnInit, OnDestroy {
                 this.board[move.from.row][move.from.col] = null;
                 // Switch turn
                 this.togglePlayer();
+              } else if (responseObject.status === 'ok' && responseObject.message == "Match finished.") {
+                const res = responseObject.data;
+                // Open match result notification modal
+                this.dialog.open(MatchResultModalComponent, {
+                  disableClose: true,
+                  width: '400px', // Đặt kích thước modal
+                  data: {
+                    result: res.result, // "WIN" or "LOSE"
+                    ratingChange: res.ratingChange // +10 or -10
+                  }
+                });  
               }
             });
-          };
+          } else if (responseObject.status === 'ok' && responseObject.message == "Match cancel.") {
+            const res = responseObject.data;
+            // Close the waiting opponent modal
+            if (this.dialogRef) {
+              this.dialogRef.close();
+              this.dialogRef = null;
+            }
+            // Open match cancel notification modal
+            this.dialog.open(MatchCancelModalComponent, {
+              disableClose: true,
+              width: '400px'
+            });
+          }
         });
         // send match ready request
         this.matchService.ready(this.matchId);
@@ -191,7 +227,7 @@ export class MatchComponent implements OnInit, OnDestroy {
     );
   }
 
-  setupTimer() {
+  private setupTimer() {
     // Get elapsed time 
     const elapsed = Math.floor((Date.now() - new Date(this.lastMoveTime!).getTime()) / 1000);
     // Setup time left of current player
@@ -204,7 +240,7 @@ export class MatchComponent implements OnInit, OnDestroy {
     this.blackPlayerTurnTimeLeft = this.blackPlayerTurnTimeLeft - elapsed;
   }
 
-  startTimer() {
+  private startTimer() {
     if (this.timerInterval) {
       clearInterval(this.timerInterval);
     }
@@ -222,7 +258,7 @@ export class MatchComponent implements OnInit, OnDestroy {
     }, 1000);
   }
 
-  togglePlayer() {
+  private togglePlayer() {
     // Reset turn-timer
     if (this.currentPlayer === 'red') 
       this.redPlayerTurnTimeLeft = 2 * 60;
@@ -237,10 +273,10 @@ export class MatchComponent implements OnInit, OnDestroy {
   // Check if the current player has any legal moves left and forfeit if not
   private checkForfeit() {
     if (!this.hasLegalMoves(this.currentPlayer)) {
-      // this.forfeitGame();
-      alert("Out of move!");
+      this.matchService.forfeit(this.matchId);
     }
   }
+
 
   // Check if the player has any legal moves
   private hasLegalMoves(playerColor: 'red' | 'black'): boolean {
@@ -263,25 +299,6 @@ export class MatchComponent implements OnInit, OnDestroy {
     return false; // No legal moves found
   }
 
-  // Send API request to forfeit the game
-  // private forfeitGame() {
-  //   const forfeitData = {
-  //     player: this.currentPlayer,
-  //     reason: 'No legal moves available',
-  //   };
-
-  //   this.http.post('/api/forfeit', forfeitData).subscribe({
-  //     next: (response) => {
-  //       console.log('Forfeit successful:', response);
-  //       // Optionally reset the game or show a message
-  //       alert(`${this.currentPlayer} has forfeited the game due to no legal moves.`);
-  //     },
-  //     error: (error) => {
-  //       console.error('Forfeit failed:', error);
-  //     },
-  //   });
-  // }
-
   handleMove(move: MoveRequest) {
     // Move the selected piece
     this.board[move.to.row][move.to.col] = this.board[move.from.row][move.from.col];
@@ -290,5 +307,9 @@ export class MatchComponent implements OnInit, OnDestroy {
     this.matchService.move(this.matchId, move);
     // Change turn
     this.togglePlayer();
+  }
+
+  onForfeitClick() {
+    this.matchService.forfeit(this.matchId);
   }
 }

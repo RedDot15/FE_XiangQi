@@ -1,0 +1,53 @@
+.modal-content {
+    text-align: center;
+    padding: 20px;
+  }
+  
+  h2 {
+    margin-bottom: 10px;
+    font-size: 24px;
+    color: #333;
+  }
+  
+  p {
+    margin-bottom: 20px;
+    font-size: 18px;
+  }
+  
+  p.win {
+    color: #4caf50;
+    font-weight: bold;
+  }
+  
+  p.lose {
+    color: #f44336;
+    font-weight: bold;
+  }
+  
+  p.draw {
+    color: #757575;
+    font-weight: bold;
+  }
+  
+  .score-container {
+    margin-bottom: 20px;
+  }
+  
+  .score-container p {
+    margin: 5px 0;
+    font-size: 16px;
+  }
+  
+  .score {
+    font-weight: bold;
+  }
+  
+  .button-container {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+  }
+  
+  button {
+    min-width: 100px;
+  }
