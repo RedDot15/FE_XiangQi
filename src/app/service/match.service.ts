@@ -16,4 +16,6 @@ export class MatchService {
   move = async (matchId: string, move: MoveRequest) => await this.httpClient.postWithAuth("api/match/" + matchId + "/move", move);
 
   ready = async (matchId: string) => await this.httpClient.postWithAuth("api/match/" + matchId + "/ready", {});
+  
+  forfeit = async (matchId: string) => await this.httpClient.putWithAuth("api/match/" + matchId + "/resign", {});
 }

@@ -1,0 +1,16 @@
+<div class="modal-content">
+    <h2>Kết quả trận đấu</h2>
+    <p [ngClass]="{
+      'win': result === 'WIN',
+      'lose': result === 'LOSE',
+    }">
+      {{ result === 'WIN' ? 'Thắng!' : 'Thua'}}
+    </p>
+    <div class="score-container">
+      <p>Điểm: <span class="score">{{ ratingChange }}</span></p>
+    </div>
+    <div class="button-container">
+        <button mat-raised-button color="primary" (click)="onPlayAgain()">Tìm trận</button>
+        <button mat-raised-button color="basic" (click)="onBack()">Trở lại trang tìm trận</button>
+    </div>
+  </div>
