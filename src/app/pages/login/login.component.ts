@@ -16,41 +16,49 @@ import { AuthRequest } from '../../models/request/auth.request';
   styleUrl: './login.component.css'
 })
 export class LoginComponent {
-    auth: AuthRequest = {
-      username: '',
-      password: ''
-    };
-    confirmPassword = ''; // Dùng cho đăng ký
-    isLogin = true;
-  
-    constructor(
-      private authService: AuthService,
-      private cookieService: CookieService,
-      private router: Router,
-    ) {}
-  
-    async login(event: Event) {
-      event.preventDefault();
+  auth: AuthRequest = {
+    username: '',
+    password: ''
+  };
+  confirmPassword = ''; // Dùng cho đăng ký
+  isLogin = true;
 
-      // Get token
-      const res = await this.authService.auth(this.auth);
-      // Set token to cookie
-      if (res.status == "ok") {
-        const { accessToken, refreshToken} = res.data;
-        this.cookieService.setToken(accessToken);
-        this.cookieService.setRefreshToken(refreshToken);
-        this.router.navigate(['/']);
-      }
-    }
-  
-    async register(event: Event) {
-      event.preventDefault();
-      if (this.auth.password !== this.confirmPassword) return;
-  
-      const res = await this.authService.register(this.auth);
-      if (res.status == "ok") {
-        this.isLogin = true; // Chuyển về trang đăng nhập sau khi đăng ký thành công
-      }
+  constructor(
+    private authService: AuthService,
+    private cookieService: CookieService,
+    private router: Router,
+  ) { }
+
+  async login(event: Event) {
+    event.preventDefault();
+
+    // Get token
+    const res = await this.authService.auth(this.auth);
+    // Set token to cookie
+    if (res.status == "ok") {
+      const { accessToken, refreshToken } = res.data;
+      this.cookieService.setToken(accessToken);
+      this.cookieService.setRefreshToken(refreshToken);
+      this.router.navigate(['/']);
     }
   }
-  
+
+  async register(event: Event) {
+    event.preventDefault();
+    if (this.auth.password !== this.confirmPassword) {
+      alert("Mật khẩu xác nhận không khớp.");
+      return;
+    }
+
+    const req: AuthRequest = {
+      ...this.auth,
+      confirmPassword: this.confirmPassword
+    };
+
+    const res = await this.authService.register(req);
+    if (res.status === "ok") {
+      alert("Đăng kí thành công!");
+      this.isLogin = true;
+    }
+  }
+}
