@@ -2,23 +2,35 @@ import { Component } from '@angular/core';
 import { BoardComponent } from '../../components/board/board.component';
 import { MatchService } from '../../service/match.service';
 import { Router } from '@angular/router';
+import { FormsModule } from '@angular/forms';
+import { CommonModule } from '@angular/common';
 @Component({
   selector: 'app-play-computer',
   standalone: true,
-  imports: [],
+  imports: [
+    FormsModule,
+    CommonModule
+  ],
   templateUrl: './play-computer.component.html',
   styleUrl: './play-computer.component.css'
 })
 export class PlayComputerComponent {
-    constructor(private matchService: MatchService, private router: Router) {}
+
+  selectedDifficulty: string = 'easy';
+
+  selectDifficulty(diff: string) {
+    this.selectedDifficulty = diff;
+  }
+
+  constructor(private matchService: MatchService, private router: Router) {}
     
-    async startGame() {
-      try {
-        const res: any = await this.matchService.createAImatch();
-        const matchId = res.data;
-        await this.router.navigate(['/match', matchId]);
-      } catch (error) {
-        console.error('Lỗi khi tạo trận đấu với AI:', error);
-      }
+  async startGame() {
+    try {
+      const res: any = await this.matchService.createAImatch();
+      const matchId = res.data;
+      await this.router.navigate(['/match', matchId]);
+    } catch (error) {
+      console.error('Lỗi khi tạo trận đấu với AI:', error);
     }
+  }
 }
