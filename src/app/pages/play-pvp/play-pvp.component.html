@@ -10,8 +10,8 @@
                 <div *ngIf="isSearched">
                     <div *ngIf="searchRes.length > 0" class="mt-4 search-result">
                         <div *ngFor="let player of searchRes" class="player-item">
-                            <span>{{ player.name }}</span>
-                            <button class="btn btn-success btn-sm ml-2" (click)="invitePlayer(player.id)">Mời</button>
+                            <span>{{ player.name }} (rating: {{ player.rating }})</span>
+                            <button class="btn btn-success btn-sm ml-2" (click)="invitePlayer(player.name)">Mời</button>
                         </div>
                     </div>
                     

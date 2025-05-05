@@ -4,6 +4,7 @@ import { MatchService } from '../../service/match.service';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
+import { WebsocketService } from '../../service/websocket.service';
 @Component({
   selector: 'app-play-computer',
   standalone: true,
@@ -22,7 +23,13 @@ export class PlayComputerComponent {
     this.selectedDifficulty = diff;
   }
 
-  constructor(private matchService: MatchService, private router: Router) {}
+  constructor(
+    private matchService: MatchService, 
+    private router: Router,
+    private wsService: WebsocketService
+  ) {
+    this.wsService.setStatus('idle');
+  }
     
   async startGame() {
     try {
