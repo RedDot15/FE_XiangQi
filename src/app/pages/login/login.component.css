@@ -1,3 +1,8 @@
+.game_title{
+    font-size: 35px;
+    color: rgb(194, 53, 46) ;
+    font-weight: bold;
+}
 .h_vh100{
     height: 100vh;
     background-image: url("/assets/bg_game.jpg");
