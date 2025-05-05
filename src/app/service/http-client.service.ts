@@ -77,7 +77,7 @@ export class HttpClientService {
         // Navigate back to login page if refresh fail
         this.router.navigate(["/login"]); 
       }
-      return null;
+      throw error;
     }
   }
 

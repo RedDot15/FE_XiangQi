@@ -13,10 +13,12 @@ import { Router } from '@angular/router';
   styleUrl: './navbar.component.css'
 })
 export class NavbarComponent {
-  menu=MENU;
-  constructor(public router:Router){
-  }
-  onNavigate(path:any){
+  menu = MENU;
+
+  constructor(public router:Router) {}
+
+  onNavigate(path:any) {
     this.router.navigate([path])
   }
+
 }

@@ -1,5 +1,6 @@
 import { NgFor } from '@angular/common';
 import { Component } from '@angular/core';
+import { WebsocketService } from '../../service/websocket.service';
 
 @Component({
   selector: 'app-leader-board',
@@ -13,4 +14,9 @@ import { Component } from '@angular/core';
 export class LeaderBoardComponent {
   topPlayers:any=[];
   
+  constructor (
+    private wsService: WebsocketService
+  ) {
+    this.wsService.setStatus('idle');
+  }
 }

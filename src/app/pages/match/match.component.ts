@@ -51,7 +51,9 @@ export class MatchComponent implements OnInit, OnDestroy {
     private wsService: WebsocketService,
     private moveValidator: MoveValidatorService,
     private dialog: MatDialog,
-  ) {}
+  ) {
+    this.wsService.setStatus('in_match');
+  }
 
   ngOnInit() {
     this.getMatchState();
@@ -62,7 +64,7 @@ export class MatchComponent implements OnInit, OnDestroy {
       clearInterval(this.timerInterval);
     }
     if (this.subscription) {
-      this.subscription.close();
+      this.subscription.unsubscribe();
     }
   }
 
