@@ -13,17 +13,18 @@ import { WebsocketService } from '../../service/websocket.service';
   styleUrl: './home-page.component.css'
 })
 export class HomePageComponent {
-  constructor(public router:Router){
-  }
   onNavigate(path:any){
     this.router.navigate([path])
   }
   onPlayOnline() {
     this.router.navigate(['/play/PvP']);
   }
-
+  onPlayWithAI(){
+    this.router.navigate(['/play/computer']);
+  }
   constructor (
-    private wsService: WebsocketService
+    private wsService: WebsocketService,
+    private router: Router
   ) {
     // Wait for WebSocket connection before setting status
     this.wsService.setStatus('idle');
