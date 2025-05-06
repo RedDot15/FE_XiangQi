@@ -21,7 +21,7 @@ interface Piece {
 @Component({
   selector: 'app-match',
   standalone: true,
-  imports: [BoardComponent, GameSidebarComponent, MatchWaitingModalComponent, MatchResultModalComponent, MatchCancelModalComponent],
+  imports: [BoardComponent, GameSidebarComponent],
   templateUrl: './match.component.html',
   styleUrl: './match.component.css'
 })

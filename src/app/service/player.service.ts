@@ -14,6 +14,8 @@ export class PlayerService {
     ) {}
 
   getMyInfo = async () => await this.httpClient.getWithAuth('api/player/my-info/get', {});
+
+  getAll = async (role: string) => await this.httpClient.getWithAuth('api/player/', {role: role});
   
 //   register = async (auth: AuthRequest) => await this.httpClient.post('api/player/register', auth);
 }
