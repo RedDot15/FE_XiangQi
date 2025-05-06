@@ -6,9 +6,7 @@ import { WebsocketService } from '../../service/websocket.service';
 @Component({
   selector: 'app-home-page',
   standalone: true,
-  imports: [
-    BoardComponent
-  ],
+  imports: [],
   templateUrl: './home-page.component.html',
   styleUrl: './home-page.component.css'
 })
