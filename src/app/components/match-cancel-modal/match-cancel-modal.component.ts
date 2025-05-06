@@ -1,6 +1,7 @@
 import { Component, Inject } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-match-cancel-modal',
@@ -11,7 +12,8 @@ import { MatButtonModule } from '@angular/material/button';
 })
 export class MatchCancelModalComponent {
   constructor(
-    public dialogRef: MatDialogRef<MatchCancelModalComponent>
+    public dialogRef: MatDialogRef<MatchCancelModalComponent>,
+    private router: Router
   ) {}
 
   onPlayAgain() {
@@ -20,5 +22,6 @@ export class MatchCancelModalComponent {
   
   onBack() {
     this.dialogRef.close(true);
+    this.router.navigate(['/play/PvP']);
   }
 }
