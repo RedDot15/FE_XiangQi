@@ -19,14 +19,14 @@ import { MatSnackBar } from '@angular/material/snack-bar';
   templateUrl: './play-pvp.component.html',
   styleUrls: ['./play-pvp.component.css'] 
 })
-export class PlayPvpComponent implements OnDestroy{
+export class PlayPvpComponent implements OnInit, OnDestroy{
   searchName: string = '';
   searchRes: any[] = [];
   isSearched: boolean = false;
   modalRef!: NzModalRef; // Lưu trữ modal để có thể đóng
 
-  private subscription: any;
-  private inviteSubscription: any;
+  private queueSubscription: any;
+  private inviterSubscription: any;
 
   constructor(
     private modal: NzModalService, 
@@ -36,9 +36,11 @@ export class PlayPvpComponent implements OnDestroy{
     private router: Router) {
       // Set websocket status
       this.wsService.setStatus('idle');
+    }
 
+    async ngOnInit(): Promise<void> {
       // Add websocket listener to handle invitation response
-      this.inviteSubscription = this.wsService.listenToInvite(responseObject => {
+      this.inviterSubscription = await this.wsService.listenToInvite(responseObject => {
         if (responseObject.status === 'ok' && responseObject.message == "INVITATION_ACCEPTED") { // Nếu đối thủ chấp nhận lời mời
           if (this.modalRef) {
             // Đóng modal mời 
@@ -131,8 +133,8 @@ export class PlayPvpComponent implements OnDestroy{
         const res = await this.queueService.unQueue();
         if (res.status === 'ok') {
           // Unsubscribe and close modal only when unQueue success
-          if (this.subscription) {
-            this.subscription.unsubscribe();
+          if (this.queueSubscription) {
+            this.queueSubscription.unsubscribe();
           }
           // Đóng modal tìm trận
           this.modalRef.close();
@@ -156,7 +158,7 @@ export class PlayPvpComponent implements OnDestroy{
       });
   
       // Lắng nghe phản hồi từ server
-      this.subscription = this.wsService.listenToQueue(responseObject => {
+      this.queueSubscription = this.wsService.listenToQueue(responseObject => {
         if (responseObject.data.status === 'MATCH_FOUND') {
           // Đóng modal tìm trận
           this.modalRef.close();
@@ -170,26 +172,26 @@ export class PlayPvpComponent implements OnDestroy{
     }
   }
 
-  async ngOnDestroy() {
+  ngOnDestroy() {
     // Unsubscribe
-    if (this.inviteSubscription) {
-      this.inviteSubscription.unsubscribe();
+    if (this.inviterSubscription) {
+      this.inviterSubscription.unsubscribe();
     }
-    if (this.subscription) {
-      this.subscription.unsubscribe();
+    if (this.queueSubscription) {
+      this.queueSubscription.unsubscribe();
     }
     // Gọi unInvite để thu hồi mọi lời mời
-    await this.wsService.unInvite('');
+    this.wsService.unInvite('');
     // Gọi unQueue để xóa người chơi khỏi hàng đợi
-    await this.queueService.unQueue();
+    this.queueService.unQueue();
   }
 
   @HostListener('window:beforeunload', ['$event'])
-  async beforeUnloadHandler(event: Event) {
+  beforeUnloadHandler(event: Event) {
     // Gọi unQueue để xóa người chơi khỏi hàng đợi
-    await this.queueService.unQueue();
+    this.queueService.unQueue();
     // Gọi unInvite để thu hồi mọi lời mời
-    await this.wsService.unInvite('');
+    this.wsService.unInvite('');
   }
 
 }

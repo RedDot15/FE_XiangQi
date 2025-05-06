@@ -1,4 +1,4 @@
-import { Component, NgZone } from '@angular/core';
+import { Component, NgZone, OnInit } from '@angular/core';
 import { NavbarComponent } from './navbar/navbar.component';
 import { Router, RouterOutlet } from '@angular/router';
 import { HeaderComponent } from './header/header.component';
@@ -17,8 +17,8 @@ import { NzModalModule, NzModalRef, NzModalService } from 'ng-zorro-antd/modal';
   templateUrl: './layout.component.html',
   styleUrl: './layout.component.css'
 })
-export class LayoutComponent {
-  private subscription: any;
+export class LayoutComponent implements OnInit{
+  private inviteeSubscription: any;
   private modalRef: NzModalRef | null = null;
 
   constructor (
@@ -26,8 +26,13 @@ export class LayoutComponent {
     private wsService: WebsocketService,
     private ngZone: NgZone,
     private modalService: NzModalService,
-  ) {
-    this.subscription = this.wsService.listenToInvite(responseObject => {
+  ) {}
+
+  async ngOnInit(): Promise<void> {
+    // Connect
+    this.wsService.initializeConnection();
+    // Listen to invite
+    this.inviteeSubscription = await this.wsService.listenToInvite(responseObject => {
       this.ngZone.run(() => {
         if (responseObject.status === 'ok' && responseObject.message === "A new invitation received.") {
           // Open NZ modal with accept/decline buttons
@@ -85,14 +90,17 @@ export class LayoutComponent {
     }
   }
 
-  onNavigate(){
+  onNavigateHome(){
     this.router.navigate(['/']);
   }
 
   // Clean up subscription and modal on component destruction
   ngOnDestroy() {
-    // Log out
-    this.wsService.logOut();
+    if (this.inviteeSubscription) {
+      this.inviteeSubscription.unsubscribe();
+    }
+    // Disconnect
+    this.wsService.disconnect();
     // Close modal
     if (this.modalRef) {
       this.modalRef.close();
