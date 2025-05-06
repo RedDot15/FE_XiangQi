@@ -10,7 +10,8 @@ export class MatchService {
   constructor(
     private httpClient: HttpClientService) {
   }
-  createAImatch = async()=> await this.httpClient.postWithAuth("api/match/ai",{})
+  createAImatch = async (mode: string) =>  await this.httpClient.postWithAuth("api/match/ai", { mode });
+  
   getMatch = async (matchId: string) => await this.httpClient.getWithAuth("api/match/" + matchId, {});
 
   move = async (matchId: string, move: MoveRequest) => await this.httpClient.postWithAuth("api/match/" + matchId + "/move", move);
