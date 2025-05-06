@@ -1,11 +1,100 @@
-.title{
-    color: rgb(194, 53, 46);
-    font-size: 24px;
+/* Tiêu đề */
+.title {
+    color: #c2352e; /* Màu đỏ đậm */
+    font-size: 2.5rem;
     font-weight: bold;
-    background-color: bisque;
-    height: 50px;
+    background-color: rgba(245, 230, 204, 0.8); /* Nền gỗ nhạt trong suốt */
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
 }
-.board-wrapper{
+
+/* Wrapper cho bảng xếp hạng */
+.board-wrapper {
     margin-top: 40px;
-    
+    padding: 20px;
+    background-color: transparent; /* Background trong suốt */
+    min-height: 100vh;
+}
+
+/* Container bảng */
+.table-container {
+    background-color: rgba(255, 255, 255, 0.9); /* Bảng trong suốt nhẹ */
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    overflow-x: auto;
+}
+
+/* Style cho bảng */
+.table {
+    margin-bottom: 0;
+}
+
+.table th, .table td {
+    vertical-align: middle;
+    padding: 12px;
+}
+
+.table th {
+    background-color: rgba(60, 47, 47, 0.9); /* Header trong suốt nhẹ */
+    color: #fff;
+    font-weight: 600;
+}
+
+.table tbody tr:hover {
+    background-color: rgba(245, 230, 204, 0.6); /* Hover trong suốt */
+    cursor: pointer;
+}
+
+/* Style cho phân trang */
+.pagination {
+    margin-top: 20px;
+}
+
+.page-link {
+    color: #c2352e;
+    border-radius: 4px;
+    margin: 0 2px;
+    background-color: rgba(255, 255, 255, 0.8); /* Nút phân trang trong suốt */
+}
+
+.page-item.active .page-link {
+    background-color: #c2352e;
+    border-color: #c2352e;
+    color: #fff;
+}
+
+.page-item.disabled .page-link {
+    color: #ccc;
+    cursor: not-allowed;
+    background-color: rgba(255, 255, 255, 0.5);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .title {
+        font-size: 1.8rem;
+        padding: 10px;
+    }
+
+    .table th, .table td {
+        padding: 8px;
+        font-size: 0.9rem;
+    }
+
+    .board-wrapper {
+        padding: 10px;
+    }
+}
+
+@media (max-width: 576px) {
+    .title {
+        font-size: 1.5rem;
+    }
+
+    .table th, .table td {
+        padding: 6px;
+        font-size: 0.85rem;
+    }
 }

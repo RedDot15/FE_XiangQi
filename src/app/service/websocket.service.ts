@@ -14,12 +14,13 @@ export type ListenerCallBack = (message: ResponseObject) => void;
 @Injectable({
   providedIn: 'root'
 })
-export class WebsocketService implements OnDestroy {
+export class WebsocketService {
   
   private connection: CompatClient | null = null;
-  private subscription: StompSubscription | undefined;
   private inviteSubscription: StompSubscription | undefined;
   private userId: string | null = null;
+
+  // Khóa chờ connection
   private connectionPromise: Promise<void>;
   private resolveConnection: (() => void) | null = null;
 
@@ -27,17 +28,23 @@ export class WebsocketService implements OnDestroy {
       private cookieService: CookieService,
       private router: Router,
       private httpClient: HttpClientService) {
+    // Connection lock
     this.connectionPromise = new Promise((resolve) => {
       this.resolveConnection = resolve;
     });
+    // Define connection
     this.connection = Stomp.over(() => new WebSocket(environment.baseWebSocket));
-    this.initializeConnection();
   }
 
-  private initializeConnection() {
+  public initializeConnection() {
+    // Connection lock
+    this.connectionPromise = new Promise((resolve) => {
+      this.resolveConnection = resolve;
+    });
+    // Get userId
     const token = this.cookieService.getToken();
     this.userId = this.getUidFromToken(token);
-
+    // Connect
     if (this.connection && this.userId) {
       this.connection.connect({}, () => {
         console.log('WebSocket connected');
@@ -46,6 +53,12 @@ export class WebsocketService implements OnDestroy {
       }, (error: any) => {
         console.error('WebSocket error:', error);
       });
+    }
+  }
+  
+  disconnect() {
+    if (this.connection) {
+      this.connection.disconnect();
     }
   }
 
@@ -75,7 +88,7 @@ export class WebsocketService implements OnDestroy {
     const uid = this.getUidFromToken(token);
     
     if (this.connection) {
-      return this.subscription = this.connection.subscribe('/topic/queue/player/' + uid, message => 
+      return this.connection.subscribe('/topic/queue/player/' + uid, message => 
         fun(JSON.parse(message.body))); 
     }
     return null;
@@ -91,23 +104,59 @@ export class WebsocketService implements OnDestroy {
     await this.connectionPromise;
 
     if (this.connection) {
-      return this.inviteSubscription = this.connection.subscribe('/topic/invite/player/' + uid, message => 
+      return this.connection.subscribe('/topic/invite/player/' + uid, message => 
         fun(JSON.parse(message.body))); 
     }
     return null;
   }
 
-  public listenToMatch(fun: ListenerCallBack) {
+  public async listenToMatch(fun: ListenerCallBack) {
     const token = this.cookieService.getToken();
 
     // Decode the JWT to get the user ID
     const uid = this.getUidFromToken(token);
     
+    // Wait for connection to be established
+    await this.connectionPromise;
+    
     if (this.connection) {
-      return this.subscription = this.connection.subscribe('/topic/match/player/' + uid, message => 
+      return this.connection.subscribe('/topic/match/player/' + uid, message => 
         fun(JSON.parse(message.body))); 
     }
     return null;
+  }
+
+  public async listenToChat(matchId: string, fun: ListenerCallBack) {
+    // Wait for connection to be established
+    await this.connectionPromise;
+    
+    if (this.connection) {
+      return this.connection.subscribe('/topic/chat/match/' + matchId, message => 
+        fun(JSON.parse(message.body)));
+    }
+    return null;
+  }
+
+  public async sendChatMessage(matchId: string, message: string, sender: string) {
+    const token = this.cookieService.getToken();
+    // Decode the JWT to get the user ID
+    const uid = this.getUidFromToken(token);
+
+    if (!this.connection || !this.userId) {
+      throw new Error('WebSocket connection not established or user not authenticated');
+    }
+
+    // Wait for connection to be established
+    await this.connectionPromise;
+
+    if (message.trim()) {
+      // Send message to /app/chat with matchId in headers or payload
+      this.connection.send('/app/chat', {}, JSON.stringify({
+        matchId: matchId,
+        sender: sender,
+        message: message 
+      }));
+    }
   }
 
   // Function to decode JWT and extract uid using jwt-decode
@@ -134,23 +183,4 @@ export class WebsocketService implements OnDestroy {
   
   rejectInvite = async (username: string) => await this.httpClient.deleteWithAuth('api/ws/player/' + username + '/invitation-reject', {});
   
-
-  logOut() {
-    if (this.inviteSubscription) {
-      this.inviteSubscription.unsubscribe();
-    }
-    if (this.connection) {
-      this.connection.disconnect();
-    }
-  }
-
-  ngOnDestroy() {
-    if (this.subscription) {
-      this.subscription.unsubscribe();
-    }
-    if (this.connection) {
-      this.connection.disconnect();
-    }
-  }
-
 }

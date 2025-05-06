@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { NgIf, NgFor, NgClass } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { WebsocketService } from '../../service/websocket.service';
@@ -16,7 +16,7 @@ interface ChatMessage {
   templateUrl: './game-sidebar.component.html',
   styleUrl: './game-sidebar.component.css'
 })
-export class GameSidebarComponent {
+export class GameSidebarComponent implements OnInit, OnDestroy{
   @Input() currentPlayer: 'red' | 'black' = 'red';
   @Input() playerView: 'red' | 'black' = 'red';
   @Input() matchId: string = '-1';
@@ -31,20 +31,21 @@ export class GameSidebarComponent {
 
   chatMessages: ChatMessage[] = [];
   newMessage: string = '';
+  chatSubscription: any;
 
   constructor(private wsService: WebsocketService) {}
 
-  ngOnInit() {
-    // // Listen for chat messages from WebSocket
-    // this.wsService.listenToChat(this.matchId).subscribe((message: any) => {
-    //   if (message.status === 'ok' && message.data) {
-    //     this.chatMessages.push({
-    //       sender: message.data.sender,
-    //       message: message.data.message,
-    //       timestamp: new Date(message.data.timestamp).toLocaleTimeString()
-    //     });
-    //   }
-    // });
+  async ngOnInit() {
+    // Listen for chat messages from WebSocket
+    this.chatSubscription = await this.wsService.listenToChat(this.matchId, responseObject => {
+      if (responseObject.status === 'ok' && responseObject.message == "Message received.") {
+        this.chatMessages.push({
+          sender: responseObject.data.sender,
+          message: responseObject.data.message,
+          timestamp: new Date(responseObject.data.timestamp).toLocaleTimeString()
+        })
+      }
+    });
   }
 
   formatTime(seconds: number): string {
@@ -54,9 +55,15 @@ export class GameSidebarComponent {
   }
 
   sendMessage() {
-    // if (this.newMessage.trim()) {
-    //   this.wsService.sendChatMessage(this.matchId, this.newMessage);
-    //   this.newMessage = '';
-    // }
+    if (this.newMessage.trim()) {
+      this.wsService.sendChatMessage(this.matchId, this.newMessage, this.playerName);
+      this.newMessage = '';
+    }
+  }
+
+  ngOnDestroy(): void {
+    if (this.chatSubscription) {
+      this.chatSubscription.unsubscribe();
+    }
   }
 }

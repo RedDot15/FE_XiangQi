@@ -6,13 +6,19 @@ import { WebsocketService } from '../../service/websocket.service';
 @Component({
   selector: 'app-home-page',
   standalone: true,
-  imports: [
-    BoardComponent
-  ],
+  imports: [],
   templateUrl: './home-page.component.html',
   styleUrl: './home-page.component.css'
 })
 export class HomePageComponent {
+  constructor (
+    private wsService: WebsocketService,
+    private router: Router
+  ) {
+    // Wait for WebSocket connection before setting status
+    this.wsService.setStatus('idle');
+  }
+
   onNavigate(path:any){
     this.router.navigate([path])
   }
@@ -22,12 +28,4 @@ export class HomePageComponent {
   onPlayWithAI(){
     this.router.navigate(['/play/computer']);
   }
-  constructor (
-    private wsService: WebsocketService,
-    private router: Router
-  ) {
-    // Wait for WebSocket connection before setting status
-    this.wsService.setStatus('idle');
-  }
-
 }

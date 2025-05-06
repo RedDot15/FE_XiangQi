@@ -21,7 +21,7 @@ interface Piece {
 @Component({
   selector: 'app-match',
   standalone: true,
-  imports: [BoardComponent, GameSidebarComponent, MatchWaitingModalComponent, MatchResultModalComponent, MatchCancelModalComponent],
+  imports: [BoardComponent, GameSidebarComponent],
   templateUrl: './match.component.html',
   styleUrl: './match.component.css'
 })
@@ -41,7 +41,7 @@ export class MatchComponent implements OnInit, OnDestroy {
   lastMoveTime: number | null = null;
 
   private timerInterval: any;
-  private subscription: any;
+  private matchSubscription: any;
   private dialogRef: MatDialogRef<MatchWaitingModalComponent> | null = null;
 
   constructor(
@@ -63,8 +63,8 @@ export class MatchComponent implements OnInit, OnDestroy {
     if (this.timerInterval) {
       clearInterval(this.timerInterval);
     }
-    if (this.subscription) {
-      this.subscription.unsubscribe();
+    if (this.matchSubscription) {
+      this.matchSubscription.unsubscribe();
     }
   }
 
@@ -106,7 +106,7 @@ export class MatchComponent implements OnInit, OnDestroy {
         this.setupTimer();
         this.startTimer();
         // Listening for opponent's move from server
-        this.subscription = this.wsService.listenToMatch(responseObject => {
+        this.matchSubscription = await this.wsService.listenToMatch(responseObject => {
           if (responseObject.status === 'ok' && responseObject.message == "Opponent player has moved.") {
             const move = responseObject.data;
             // Move the piece
@@ -135,7 +135,7 @@ export class MatchComponent implements OnInit, OnDestroy {
         });
         
         // Listen for match ready 
-        this.subscription = this.wsService.listenToMatch(responseObject => {
+        this.matchSubscription = await this.wsService.listenToMatch(async responseObject => {
           if (responseObject.status === 'ok' && responseObject.message == 'The match is start.') {
             // Close the waiting opponent modal
             if (this.dialogRef) {
@@ -144,7 +144,7 @@ export class MatchComponent implements OnInit, OnDestroy {
             }
 
             // Close the ready subscription
-            this.subscription.unsubscribe();
+            this.matchSubscription.unsubscribe();
             // Get response data
             const data = responseObject.data;
             // Update last move time
@@ -153,7 +153,7 @@ export class MatchComponent implements OnInit, OnDestroy {
             this.setupTimer();
             this.startTimer();
             // Listening for opponent's move from server
-            this.subscription = this.wsService.listenToMatch(responseObject => {
+            this.matchSubscription = await this.wsService.listenToMatch(responseObject => {
               if (responseObject.status === 'ok' && responseObject.message == "Opponent player has moved.") {
                 const move = responseObject.data;
                 // Move the piece
