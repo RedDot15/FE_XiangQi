@@ -172,6 +172,10 @@ export class PlayPvpComponent implements OnInit, OnDestroy{
     }
   }
 
+  onNavigateHistory(id: string){
+    this.router.navigate(['/match-history/' + id]);
+  }
+
   ngOnDestroy() {
     // Unsubscribe
     if (this.inviterSubscription) {

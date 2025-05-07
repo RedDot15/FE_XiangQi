@@ -1,0 +1,100 @@
+/* Tiêu đề */
+.title {
+    color: #c2352e;
+    font-size: 2.5rem;
+    font-weight: bold;
+    background-color: rgba(245, 230, 204, 0.8);
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+}
+
+/* Wrapper cho lịch sử trận đấu */
+.match-history-wrapper {
+    margin-top: 40px;
+    padding: 20px;
+    background-color: transparent;
+    min-height: 100vh;
+}
+
+/* Container bảng */
+.table-container {
+    background-color: rgba(255, 255, 255, 0.9);
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    overflow-x: auto;
+}
+
+/* Style cho bảng */
+.table {
+    margin-bottom: 0;
+}
+
+.table th, .table td {
+    vertical-align: middle;
+    padding: 12px;
+}
+
+.table th {
+    background-color: rgba(60, 47, 47, 0.9);
+    color: #fff;
+    font-weight: 600;
+}
+
+.table tbody tr:hover {
+    background-color: rgba(245, 230, 204, 0.6);
+    cursor: pointer;
+}
+
+/* Style cho phân trang */
+.pagination {
+    margin-top: 20px;
+}
+
+.page-link {
+    color: #c2352e;
+    border-radius: 4px;
+    margin: 0 2px;
+    background-color: rgba(255, 255, 255, 0.8);
+}
+
+.page-item.active .page-link {
+    background-color: #c2352e;
+    border-color: #c2352e;
+    color: #fff;
+}
+
+.page-item.disabled .page-link {
+    color: #ccc;
+    cursor: not-allowed;
+    background-color: rgba(255, 255, 255, 0.5);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .title {
+        font-size: 1.8rem;
+        padding: 10px;
+    }
+
+    .table th, .table td {
+        padding: 8px;
+        font-size: 0.9rem;
+    }
+
+    .match-history-wrapper {
+        padding: 10px;
+    }
+}
+
+@media (max-width: 576px) {
+    .title {
+        font-size: 1.5rem;
+    }
+
+    .table th, .table td {
+        padding: 6px;
+        font-size: 0.85rem;
+    }
+}

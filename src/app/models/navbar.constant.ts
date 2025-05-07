@@ -11,7 +11,7 @@ export const MENU:any[] = [
     },
     {
         name:"Giải đấu",
-        path:"/",
+        path:[],
         icon:"/assets/icon/trophy.svg"
     },
     {

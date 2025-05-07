@@ -26,7 +26,7 @@
                         <tr *ngIf="!topPlayers || topPlayers.length === 0">
                             <td colspan="3" class="text-center">Không có dữ liệu</td>
                         </tr>
-                        <tr *ngFor="let player of topPlayers; let i = index">
+                        <tr *ngFor="let player of topPlayers; let i = index" (click)="onNavigateHistory(player.id)">
                             <td class="text-center">{{ i + 1 }}</td>
                             <td>{{ player.username }}</td>
                             <td class="text-center">{{ player.rating }}</td>

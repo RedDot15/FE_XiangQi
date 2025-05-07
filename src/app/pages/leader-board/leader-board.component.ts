@@ -2,6 +2,7 @@ import { NgFor, NgIf } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { WebsocketService } from '../../service/websocket.service';
 import { PlayerService } from '../../service/player.service';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-leader-board',
@@ -18,7 +19,8 @@ export class LeaderBoardComponent implements OnInit {
   
   constructor (
     private wsService: WebsocketService,
-    private playerService: PlayerService
+    private playerService: PlayerService,
+    private router: Router,
   ) {
     this.wsService.setStatus('idle');
   }
@@ -26,5 +28,9 @@ export class LeaderBoardComponent implements OnInit {
   async ngOnInit() {
     const res =  await this.playerService.getAll('PLAYER');
     this.topPlayers = res.data;
+  }
+  
+  onNavigateHistory(id: string){
+    this.router.navigate(['/match-history/' + id]);
   }
 }
