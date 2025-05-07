@@ -1,5 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import { PlayerService } from '../../service/player.service';
+import { Router } from '@angular/router';
+import { CookieService } from '../../service/cookie.service';
+import { jwtDecode } from 'jwt-decode';
+import { HistoryComponent } from '../../pages/history/history.component';
 
 @Component({
   selector: 'app-header',
@@ -11,7 +15,10 @@ import { PlayerService } from '../../service/player.service';
 export class HeaderComponent implements OnInit {
   username: string = 'Username'; // Biến lưu username, mặc định là 'Username'
 
-  constructor(private playerService: PlayerService) {}
+  constructor(
+    private playerService: PlayerService,
+    private router: Router,
+    private cookieService: CookieService,) {}
 
   ngOnInit(): void {
     this.loadPlayerInfo();
@@ -23,6 +30,26 @@ export class HeaderComponent implements OnInit {
       this.username = response.data?.username || 'Username'; // Giả sử response trả về object với field username
     } catch (error) {
       console.error('Error fetching player info:', error);
+    }
+  }
+  
+  onNavigateHistory(){
+    // Get access token
+    const token = this.cookieService.getToken();
+    // Decode the JWT to get the user ID
+    const uid = this.getUidFromToken(token);
+
+    // Routing
+    this.router.navigate(['/match-history/' + uid]);
+  }
+  
+  private getUidFromToken(token: string): string | null {
+    try {
+      const decoded: any = jwtDecode(token);
+      return decoded.uid || null;
+    } catch (error) {
+      console.error('Error decoding JWT:', error);
+      return null;
     }
   }
 }

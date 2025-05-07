@@ -9,9 +9,9 @@
             <div class="result-container">
                 <div *ngIf="isSearched">
                     <div *ngIf="searchRes.length > 0" class="mt-4 search-result">
-                        <div *ngFor="let player of searchRes" class="player-item">
+                        <div *ngFor="let player of searchRes" class="player-item" (click)="onNavigateHistory(player.id)">
                             <span>{{ player.name }} (rating: {{ player.rating }})</span>
-                            <button class="btn btn-success btn-sm ml-2" (click)="invitePlayer(player.name)">Mời</button>
+                            <button class="btn btn-success btn-sm ml-2" (click)="invitePlayer(player.name); $event.stopPropagation()">Mời</button>
                         </div>
                     </div>
                     

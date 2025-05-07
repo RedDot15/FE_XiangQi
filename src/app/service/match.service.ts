@@ -1,6 +1,7 @@
 import { Injectable } from "@angular/core";
 import { HttpClientService } from "./http-client.service";
 import { MoveRequest } from "../models/request/move.request";
+import { Observable } from "rxjs";
 
 @Injectable({
   providedIn: 'root',
@@ -10,7 +11,15 @@ export class MatchService {
   constructor(
     private httpClient: HttpClientService) {
   }
-  createAImatch = async()=> await this.httpClient.postWithAuth("api/match/ai",{})
+
+  getPlayerMatches = async (page: number, size: number, userId: number) => await this.httpClient.getWithAuth("api/match/", {
+    page: page,
+    size: size,
+    userId: userId
+  })
+
+  createAImatch = async () => await this.httpClient.postWithAuth("api/match/ai", {});
+
   getMatch = async (matchId: string) => await this.httpClient.getWithAuth("api/match/" + matchId, {});
 
   move = async (matchId: string, move: MoveRequest) => await this.httpClient.postWithAuth("api/match/" + matchId + "/move", move);
