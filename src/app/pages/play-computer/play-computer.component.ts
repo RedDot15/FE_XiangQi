@@ -17,7 +17,7 @@ import { WebsocketService } from '../../service/websocket.service';
 })
 export class PlayComputerComponent {
 
-  selectedDifficulty: string = 'easy';
+  selectedDifficulty: string = 'AI_EASY';
 
   selectDifficulty(diff: string) {
     this.selectedDifficulty = diff;
@@ -33,7 +33,7 @@ export class PlayComputerComponent {
     
   async startGame() {
     try {
-      const res: any = await this.matchService.createAImatch();
+      const res: any = await this.matchService.createAImatch(this.selectedDifficulty);
       const matchId = res.data;
       await this.router.navigate(['/match', matchId]);
     } catch (error) {

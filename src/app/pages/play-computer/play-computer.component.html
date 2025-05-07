@@ -1,16 +1,17 @@
 <div class="wrapper text-center">
     <div class="title mb-5">Chọn chế độ chơi:</div>
     <div class="d-flex justify-content-center align-items-center gap-5 mb-5">
-
-        <div class="difficulty-card" [ngClass]="{ 'selected': selectedDifficulty === 'easy' }"
-            (click)="selectDifficulty('easy')">
-            😄 Dễ
-        </div>
-        <div class="difficulty-card" [ngClass]="{ 'selected': selectedDifficulty === 'hard' }"
-            (click)="selectDifficulty('hard')">
-            💪 Khó
-        </div>
+  
+      <div class="difficulty-card" [ngClass]="{ 'selected': selectedDifficulty === 'AI_EASY' }"
+           (click)="selectDifficulty('AI_EASY')">
+        😄 Dễ
+      </div>
+      <div class="difficulty-card" [ngClass]="{ 'selected': selectedDifficulty === 'AI_HARD' }"
+           (click)="selectDifficulty('AI_HARD')">
+        💪 Khó
+      </div>
     </div>
-
+  
     <button class="btn btn-lg btn-primary px-5" (click)="startGame()">🎮 Bắt đầu chơi</button>
-</div>
+  </div>
+  
