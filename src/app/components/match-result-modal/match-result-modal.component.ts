@@ -23,10 +23,6 @@ ratingChange: number = 0;
     this.ratingChange = data.ratingChange;
   }
 
-  onPlayAgain() {
-    this.dialogRef.close(true);
-  }
-  
   onBack() {
     this.dialogRef.close(true);
     this.router.navigate(['/play/PvP']);

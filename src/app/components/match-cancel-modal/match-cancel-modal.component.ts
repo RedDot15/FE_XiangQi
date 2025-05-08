@@ -15,10 +15,6 @@ export class MatchCancelModalComponent {
     public dialogRef: MatDialogRef<MatchCancelModalComponent>,
     private router: Router
   ) {}
-
-  onPlayAgain() {
-    this.dialogRef.close(true);
-  }
   
   onBack() {
     this.dialogRef.close(true);
