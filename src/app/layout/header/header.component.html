@@ -1,10 +1,43 @@
 <div class="container-fluid">
     <div class="d-flex justify-content-between align-items-center header-wrapper">
         <div class="player-name">
-            Xin chào, {{ username }} ({{rating}}). <div class="btn btn-outline-light btn-sm ms-2" (click)="onLogout()">Đăng xuất</div>
+            Xin chào, {{ username }} ({{rating}}). 
+            <div class="btn btn-outline-light btn-sm ms-2 mr-2"  (click)="openChangePasswordModal(changePasswordModal)">Đổi mật khẩu</div> 
+            <div class="btn btn-outline-light btn-sm ms-2" (click)="onLogout()">Đăng xuất</div>
         </div>
         <div class="tool-bar" (click)="onNavigateHistory()">
             <i class="fa-solid fa-user notification-icon"></i>
         </div>
     </div>
+
+    <!-- Modal đổi mật khẩu -->
+    <ng-template #changePasswordModal let-modal>
+        <div class="modal-header">
+        <h5 class="modal-title" id="changePasswordModalLabel">Đổi mật khẩu</h5>
+        <button type="button" class="btn-close" (click)="modal.dismiss('Cross click')"></button>
+        </div>
+        <div class="modal-body">
+        <form #changePasswordForm="ngForm">
+            <div class="mb-3">
+            <label for="oldPassword" class="form-label">Mật khẩu cũ</label>
+            <input type="password" class="form-control" id="oldPassword" name="oldPassword" [(ngModel)]="oldPassword" required>
+            </div>
+            <div class="mb-3">
+            <label for="newPassword" class="form-label">Mật khẩu mới</label>
+            <input type="password" class="form-control" id="newPassword" name="newPassword" [(ngModel)]="newPassword" required>
+            </div>
+            <div class="mb-3">
+            <label for="confirmPassword" class="form-label">Xác nhận mật khẩu mới</label>
+            <input type="password" class="form-control" id="confirmPassword" name="confirmPassword" [(ngModel)]="confirmPassword" required>
+            </div>
+        </form>
+        </div>
+        <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="modal.dismiss('Cancel')">Hủy</button>
+        <button type="button" class="btn btn-primary" (click)="changePassword(changePasswordForm)" [disabled]="isLoading">
+            <span *ngIf="isLoading" class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+            {{ isLoading ? 'Đang xử lý...' : 'Lưu thay đổi' }}
+        </button>
+        </div>
+    </ng-template>
 </div>

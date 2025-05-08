@@ -130,11 +130,11 @@ export class HttpClientService {
         this.router.navigate(['/login']);
         return null;
       }
-      return null;
+      throw error;
     }
   }
 
-  async putWithAuth(path: string, params: any): Promise<any> {
+  async putWithAuth(path: string, body: any): Promise<any> {
     const url = `${environment.baseUrl}/${path}`;
     const token = this.cookieService.getToken();
 
@@ -144,7 +144,7 @@ export class HttpClientService {
     });
 
     try {
-      return await lastValueFrom(this.http.put<any>(url, params, {
+      return await lastValueFrom(this.http.put<any>(url, body, {
         headers: headers
       }));
     } catch (error: any) {
@@ -152,19 +152,19 @@ export class HttpClientService {
         if (this.isRefreshing) {
           const isRefreshed = await this.refreshPromise!;
           if (isRefreshed) {
-            return await this.putWithAuth(path, params);
+            return await this.putWithAuth(path, body);
           }
           this.router.navigate(['/login']);
           return null;
         }
         const isRefreshed = await this.refreshToken(this.cookieService.getRefreshToken());
         if (isRefreshed) {
-          return await this.putWithAuth(path, params);
+          return await this.putWithAuth(path, body);
         }
         this.router.navigate(['/login']);
         return null;
       }
-      return null;
+      throw error;
     }
   }
 
@@ -197,7 +197,7 @@ export class HttpClientService {
         this.router.navigate(['/login']);
         return null;
       }
-      return null;
+      throw error;
     }
   }
 
