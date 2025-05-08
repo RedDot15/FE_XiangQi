@@ -4,6 +4,7 @@ import { Router } from '@angular/router';
 import { CookieService } from '../../service/cookie.service';
 import { jwtDecode } from 'jwt-decode';
 import { HistoryComponent } from '../../pages/history/history.component';
+import { AuthService } from '../../service/auth.service';
 
 @Component({
   selector: 'app-header',
@@ -14,11 +15,14 @@ import { HistoryComponent } from '../../pages/history/history.component';
 })
 export class HeaderComponent implements OnInit {
   username: string = 'Username'; // Biến lưu username, mặc định là 'Username'
+  rating: number = 0;
 
   constructor(
     private playerService: PlayerService,
     private router: Router,
-    private cookieService: CookieService,) {}
+    private cookieService: CookieService,
+    private authService: AuthService,
+  ) {}
 
   ngOnInit(): void {
     this.loadPlayerInfo();
@@ -28,6 +32,7 @@ export class HeaderComponent implements OnInit {
     try {
       const response = await this.playerService.getMyInfo();
       this.username = response.data?.username || 'Username'; // Giả sử response trả về object với field username
+      this.rating = response.data?.rating
     } catch (error) {
       console.error('Error fetching player info:', error);
     }
@@ -41,6 +46,13 @@ export class HeaderComponent implements OnInit {
 
     // Routing
     this.router.navigate(['/match-history/' + uid]);
+  }
+
+  async onLogout() {
+    // Handle log out: delete cookie & send invalidate token
+    await this.authService.handleLogout();
+    // Routing to login page
+    this.router.navigate(['/login']);
   }
   
   private getUidFromToken(token: string): string | null {

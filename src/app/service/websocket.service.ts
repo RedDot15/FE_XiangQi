@@ -1,12 +1,10 @@
 import { Injectable, OnDestroy } from '@angular/core';
 import {CompatClient, Stomp} from '@stomp/stompjs';
-import {StompSubscription} from '@stomp/stompjs/src/stomp-subscription';
 import { CookieService } from './cookie.service';
 import { jwtDecode } from 'jwt-decode';
 import { environment } from '../../environments/environment';
 import { ResponseObject } from '../models/response/response.object';
 import { Router } from '@angular/router';
-import { Observable, Subject } from 'rxjs';
 import { HttpClientService } from './http-client.service';
 
 export type ListenerCallBack = (message: ResponseObject) => void;
@@ -17,7 +15,6 @@ export type ListenerCallBack = (message: ResponseObject) => void;
 export class WebsocketService {
   
   private connection: CompatClient | null = null;
-  private inviteSubscription: StompSubscription | undefined;
   private userId: string | null = null;
 
   // Khóa chờ connection

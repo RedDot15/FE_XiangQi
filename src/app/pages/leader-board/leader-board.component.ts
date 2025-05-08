@@ -27,7 +27,9 @@ export class LeaderBoardComponent implements OnInit {
 
   async ngOnInit() {
     const res =  await this.playerService.getAll('PLAYER');
-    this.topPlayers = res.data;
+    if (res) {
+      this.topPlayers = res.data;
+    }
   }
   
   onNavigateHistory(id: string){

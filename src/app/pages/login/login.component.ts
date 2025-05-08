@@ -5,6 +5,7 @@ import { CookieService } from '../../service/cookie.service';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { AuthRequest } from '../../models/request/auth.request';
+import { PlayerService } from '../../service/player.service';
 @Component({
   selector: 'app-login',
   standalone: true,
@@ -27,6 +28,7 @@ export class LoginComponent {
     private authService: AuthService,
     private cookieService: CookieService,
     private router: Router,
+    private playerService: PlayerService,
   ) { }
 
   async login(event: Event) {
@@ -55,7 +57,7 @@ export class LoginComponent {
       confirmPassword: this.confirmPassword
     };
 
-    const res = await this.authService.register(req);
+    const res = await this.playerService.register(req);
     if (res.status === "ok") {
       alert("Đăng kí thành công!");
       this.isLogin = true;

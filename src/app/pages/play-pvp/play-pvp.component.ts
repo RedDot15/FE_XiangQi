@@ -191,11 +191,10 @@ export class PlayPvpComponent implements OnInit, OnDestroy{
   }
 
   @HostListener('window:beforeunload', ['$event'])
-  beforeUnloadHandler(event: Event) {
+  async beforeUnloadHandler(event: Event) {
     // Gọi unQueue để xóa người chơi khỏi hàng đợi
-    this.queueService.unQueue();
+    await this.queueService.unQueue();
     // Gọi unInvite để thu hồi mọi lời mời
-    this.wsService.unInvite('');
+    await this.wsService.unInvite('');
   }
-
 }

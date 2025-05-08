@@ -1,7 +1,7 @@
 <div class="container-fluid">
     <div class="d-flex justify-content-between align-items-center header-wrapper">
         <div class="player-name">
-            Xin chào, {{ username }}
+            Xin chào, {{ username }} ({{rating}}). <div class="btn btn-outline-light btn-sm ms-2" (click)="onLogout()">Đăng xuất</div>
         </div>
         <div class="tool-bar" (click)="onNavigateHistory()">
             <i class="fa-solid fa-user notification-icon"></i>
