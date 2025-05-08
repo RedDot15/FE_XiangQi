@@ -107,7 +107,7 @@ export class MatchComponent implements OnInit, OnDestroy {
         this.startTimer();
         // Listening for opponent's move from server
         this.matchSubscription = await this.wsService.listenToMatch(responseObject => {
-          if (responseObject.status === 'ok' && responseObject.message == "Opponent player has moved.") {
+          if (responseObject.status === 'ok' && responseObject.message == "Piece moved.") {
             const move = responseObject.data;
             // Move the piece
             this.board[move.to.row][move.to.col] = this.board[move.from.row][move.from.col];
@@ -154,7 +154,7 @@ export class MatchComponent implements OnInit, OnDestroy {
             this.startTimer();
             // Listening for opponent's move from server
             this.matchSubscription = await this.wsService.listenToMatch(responseObject => {
-              if (responseObject.status === 'ok' && responseObject.message == "Opponent player has moved.") {
+              if (responseObject.status === 'ok' && responseObject.message == "Piece moved.") {
                 const move = responseObject.data;
                 // Move the piece
                 this.board[move.to.row][move.to.col] = this.board[move.from.row][move.from.col];
@@ -268,47 +268,11 @@ export class MatchComponent implements OnInit, OnDestroy {
       this.blackPlayerTurnTimeLeft = 2 * 60;
     // Switch turn
     this.currentPlayer = this.currentPlayer === 'red' ? 'black' : 'red';
-    // Check forfeit if out-of-move
-    if (this.currentPlayer == this.playerView) this.checkForfeit();
-  }
-
-  // Check if the current player has any legal moves left and forfeit if not
-  private checkForfeit() {
-    if (!this.hasLegalMoves(this.currentPlayer)) {
-      this.matchService.forfeit(this.matchId);
-    }
-  }
-
-
-  // Check if the player has any legal moves
-  private hasLegalMoves(playerColor: 'red' | 'black'): boolean {
-    for (let fromRow = 0; fromRow < 10; fromRow++) {
-      for (let fromCol = 0; fromCol < 9; fromCol++) {
-        const piece = this.board[fromRow][fromCol]
-        if (piece && piece.color === playerColor) {
-          // Try every possible destination
-          for (let toRow = 0; toRow < 10; toRow++) {
-            for (let toCol = 0; toCol < 9; toCol++) {
-              // Check if the move is valid
-              if (this.moveValidator.isValidMove(fromRow, fromCol, toRow, toCol, this.board)) {
-                return true; // Found at least one legal move
-              }
-            }
-          }
-        }
-      }
-    }
-    return false; // No legal moves found
   }
 
   handleMove(move: MoveRequest) {
-    // Move the selected piece
-    this.board[move.to.row][move.to.col] = this.board[move.from.row][move.from.col];
-    this.board[move.from.row][move.from.col] = null;
     // Send move request
     this.matchService.move(this.matchId, move);
-    // Change turn
-    this.togglePlayer();
   }
 
   onForfeitClick() {
