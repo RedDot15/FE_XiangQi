@@ -22,6 +22,7 @@ export class BoardComponent {
   @Output() move = new EventEmitter<MoveRequest>();
 
   selectedPiece: { row: number, col: number } | null = null;
+  validMoves: Position[] = [];
 
   constructor(private moveValidator: MoveValidatorService) {}
 
@@ -34,12 +35,14 @@ export class BoardComponent {
     if (!this.selectedPiece){
       if (!cell || cell.color !== this.currentPlayer) return;
       this.selectedPiece = { row, col };
+      this.validMoves = this.getValidMoves(row, col);
       return;
     }
 
     // When a piece is selected
     this.movePiece(this.selectedPiece.row, this.selectedPiece.col, row, col);
     this.selectedPiece = null;
+    this.validMoves = [];
   }
 
   movePiece(fromRow: number, fromCol: number, toRow: number, toCol: number) {
@@ -51,6 +54,23 @@ export class BoardComponent {
     const moveRequest: MoveRequest = {from: from,to: to};
 
     this.move.emit(moveRequest);
+  }
+
+  getValidMoves(row: number, col: number): Position[] {
+    const moves: Position[] = [];
+    // Check all possible board positions
+    for (let r = 0; r < this.board.length; r++) {
+      for (let c = 0; c < this.board[0].length; c++) {
+        if (this.moveValidator.isValidMove(row, col, r, c, this.board)) {
+          moves.push({ row: r, col: c });
+        }
+      }
+    }
+    return moves;
+  }
+
+  isValidMove(row: number, col: number): boolean {
+    return this.validMoves.some(move => move.row === row && move.col === col);
   }
 
 } 
