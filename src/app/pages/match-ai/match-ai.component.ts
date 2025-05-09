@@ -22,10 +22,10 @@ interface Piece {
   selector: 'app-match',
   standalone: true,
   imports: [BoardComponent, GameSidebarComponent],
-  templateUrl: './match.component.html',
-  styleUrl: './match.component.css'
+  templateUrl: './match-ai.component.html',
+  styleUrl: './match-ai.component.css'
 })
-export class MatchComponent implements OnInit, OnDestroy {
+export class MatchAIComponent implements OnInit, OnDestroy {
   board: (Piece | null)[][] = [];
   currentPlayer: 'red' | 'black' = 'red';
   playerView: 'red' | 'black' = 'red';
@@ -272,7 +272,7 @@ export class MatchComponent implements OnInit, OnDestroy {
 
   handleMove(move: MoveRequest) {
     // Send move request
-    this.matchService.move(this.matchId, move);
+    this.matchService.moveAI(this.matchId, move);
   }
 
   onForfeitClick() {

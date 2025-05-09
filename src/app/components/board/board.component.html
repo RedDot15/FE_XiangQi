@@ -3,12 +3,15 @@
     <div *ngFor="let cell of row; let colIndex = index" class="cell" 
         (click)="onCellClick(rowIndex, colIndex)" 
         [ngClass]="{'valid-move': isValidMove(rowIndex, colIndex)}">
-      <img *ngIf="cell" 
-          [src]="'/assets/board_images/' + cell.type + '_' + cell.color + '.png'" 
-          class="piece"
-           [ngClass]="cell.color"
-           [ngClass]="{'selected': selectedPiece?.row === rowIndex && selectedPiece?.col === colIndex, 
-                      'piece_reverse': playerView == 'black'}">
+        <img *ngIf="cell" 
+        [src]="'/assets/board_images/' + cell.type + '_' + cell.color + '.png'" 
+        class="piece"
+        [ngClass]="[
+          cell.color, 
+          playerView === 'black' ? 'piece_reverse' : '', 
+          selectedPiece?.row === rowIndex && selectedPiece?.col === colIndex ? 'selected' : ''
+        ]">
+    
     </div>
   </div>
 </div>

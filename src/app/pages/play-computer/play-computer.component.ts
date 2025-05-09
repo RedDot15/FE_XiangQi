@@ -35,7 +35,7 @@ export class PlayComputerComponent {
     try {
       const res: any = await this.matchService.createAImatch(this.selectedDifficulty);
       const matchId = res.data;
-      await this.router.navigate(['/match', matchId]);
+      await this.router.navigate(['/match-ai', matchId]);
     } catch (error) {
       console.error('Lỗi khi tạo trận đấu với AI:', error);
     }

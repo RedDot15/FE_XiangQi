@@ -1,0 +1,64 @@
+.match-wrapper {
+  padding: 10px;
+  height: 100%; /* Chiếm toàn bộ chiều cao của div cha */
+  display: flex;
+  flex-direction: column;
+}
+
+.match-title {
+  font-size: 1.5rem;
+  font-weight: bold;
+  text-align: center;
+  margin-bottom: 10px;
+  color: #333;
+}
+
+.match-container {
+  display: flex;
+  gap: 20px;
+  padding: 10px;
+  flex: 1; /* Chiếm toàn bộ không gian còn lại */
+}
+
+.board-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.board-control {
+  margin-top: 10px;
+  display: flex;
+  gap: 10px;
+}
+
+.control-btn {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.reset-btn {
+  background-color: #dc3545;
+  color: #fff;
+}
+
+.reset-btn:hover {
+  background-color: #c82333;
+}
+
+.undo-btn {
+  background-color: #007bff;
+  color: #fff;
+}
+
+.undo-btn:hover {
+  background-color: #0056b3;
+}
+
+.game-sidebar-container {
+  height: 100%;
+}

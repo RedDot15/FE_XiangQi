@@ -1,0 +1,29 @@
+<div class="match-wrapper">
+  <div class="match-container">
+    <div class="board-container">
+      <app-board
+        [board]="board"
+        [currentPlayer]="currentPlayer"
+        [playerView]="playerView"
+        (move)="handleMove($event)">
+      </app-board>
+      <div class="board-control">
+        <button class="control-btn reset-btn">✴ Cài đặt</button>
+        <button class="control-btn undo-btn" (click)="onForfeitClick()">↶ Bỏ ván cờ</button>
+      </div>
+    </div>
+    <app-game-sidebar
+      [currentPlayer]="currentPlayer"
+      [playerView]="playerView"
+      [matchId]="matchId"
+      [opponentName]="opponentName"
+      [playerName]="playerName"
+      [opponentRating]="opponentRating"
+      [playerRating]="playerRating"
+      [redPlayerTotalTimeLeft]="redPlayerTotalTimeLeft"
+      [blackPlayerTotalTimeLeft]="blackPlayerTotalTimeLeft"
+      [redPlayerTurnTimeLeft]="redPlayerTurnTimeLeft"
+      [blackPlayerTurnTimeLeft]="blackPlayerTurnTimeLeft">
+    </app-game-sidebar>
+  </div>
+</div>
