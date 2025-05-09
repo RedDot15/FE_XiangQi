@@ -33,7 +33,7 @@
   justify-content: center;
   align-items: center;
   /* Updated: Smoother hover effect and subtle background */
-  border: 1px solid rgba(139, 69, 19, 0.2);
+  /* border: 1px solid rgba(139, 69, 19, 0.2); */
   background-color: rgba(255, 255, 255, 0.1);
   transition: background-color 0.3s ease, border-color 0.3s ease;
 }
@@ -82,7 +82,7 @@
   /* Updated: More elegant highlight with gradient and glow */
   background: radial-gradient(circle, rgba(50, 205, 50, 0.3) 20%, rgba(50, 205, 50, 0.1) 80%);
   border: 2px solid #32cd32;
-  border-radius: 8px;
+  border-radius: 50%;
   box-shadow: 0 0 10px rgba(50, 205, 50, 0.5);
   transition: all 0.3s ease;
 }
