@@ -6,6 +6,7 @@ import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { AuthRequest } from '../../models/request/auth.request';
 import { PlayerService } from '../../service/player.service';
+
 @Component({
   selector: 'app-login',
   standalone: true,
@@ -21,46 +22,84 @@ export class LoginComponent {
     username: '',
     password: ''
   };
-  confirmPassword = ''; // Dùng cho đăng ký
+  confirmPassword = '';
   isLogin = true;
+
+  showModal = false;
+  modalMessage = '';
 
   constructor(
     private authService: AuthService,
     private cookieService: CookieService,
     private router: Router,
     private playerService: PlayerService,
-  ) { }
+  ) {}
 
   async login(event: Event) {
     event.preventDefault();
 
-    // Get token
-    const res = await this.authService.auth(this.auth);
-    // Set token to cookie
-    if (res.status == "ok") {
-      const { accessToken, refreshToken } = res.data;
-      this.cookieService.setToken(accessToken);
-      this.cookieService.setRefreshToken(refreshToken);
-      this.router.navigate(['/']);
+    try {
+      const res = await this.authService.auth(this.auth);
+      if (res.status === "ok") {
+        const { accessToken, refreshToken } = res.data;
+        this.cookieService.setToken(accessToken);
+        this.cookieService.setRefreshToken(refreshToken);
+        this.router.navigate(['/']);
+      }   
+    
+    } 
+    catch (error) {
+      this.showModalMessage("Đăng nhập thất bại. Vui lòng kiểm tra lại tên đăng nhập hoặc mật khẩu.");
+      // this.showModalMessage("Có lỗi xảy ra khi đăng nhập. Vui lòng thử lại sau.");
     }
   }
 
   async register(event: Event) {
     event.preventDefault();
+
     if (this.auth.password !== this.confirmPassword) {
-      alert("Mật khẩu xác nhận không khớp.");
+      this.showModalMessage("Mật khẩu xác nhận không khớp.");
       return;
     }
 
+    if (!this.isStrongPassword(this.auth.password)) {
+      this.showModalMessage("Mật khẩu phải có ít nhất 8 ký tự, 1 chữ hoa, 1 chữ số và 1 ký tự đặc biệt.");
+      return;
+    }
     const req: AuthRequest = {
       ...this.auth,
       confirmPassword: this.confirmPassword
     };
 
-    const res = await this.playerService.register(req);
-    if (res.status === "ok") {
-      alert("Đăng kí thành công!");
-      this.isLogin = true;
+    try {
+      const res = await this.playerService.register(req);
+      if (res.status === "ok") {
+        console.log(req)
+        this.showModalMessage("Đăng ký thành công!");
+        setTimeout(() => {
+          this.isLogin = true;
+          this.showModal = false;
+        }, 2000);
+      } 
+    } 
+    catch (error) {
+      this.showModalMessage("Tên người dùng đã tồn tại!")
     }
   }
+
+  showModalMessage(message: string) {
+    this.modalMessage = message;
+    this.showModal = true;
+
+    setTimeout(() => {
+      this.showModal = false;
+    }, 2000);
+  }
+  
+  isStrongPassword(password: string): boolean {
+    const regex = /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+    return regex.test(password);
+  }
+
 }
+

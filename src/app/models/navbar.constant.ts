@@ -9,11 +9,11 @@ export const MENU:any[] = [
         path:"/play/computer",
         icon:"/assets/icon/play-computer.svg"
     },
-    {
-        name:"Giải đấu",
-        path:[],
-        icon:"/assets/icon/trophy.svg"
-    },
+    // {
+    //     name:"Giải đấu",
+    //     path:"/",
+    //     icon:"/assets/icon/trophy.svg"
+    // },
     {
         name:"Bảng xếp hạng",
         path:"/leader-board",
