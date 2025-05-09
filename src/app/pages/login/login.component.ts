@@ -82,8 +82,11 @@ export class LoginComponent {
         }, 2000);
       } 
     } 
-    catch (error) {
-      this.showModalMessage("Tên người dùng đã tồn tại!")
+    catch (error:any) {
+      console.log(error)
+      if(error.status === 409 && error.error?.message === 'Username already exists.'){
+        this.showModalMessage("Tên người dùng đã tồn tại!")
+      }
     }
   }
 

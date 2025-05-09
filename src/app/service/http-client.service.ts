@@ -214,7 +214,7 @@ export class HttpClientService {
       }));
     } catch (error: any) {
       console.error('Error in post:', error);
-      return null;
+      throw error;
     }
   }
 
