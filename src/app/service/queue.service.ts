@@ -13,5 +13,7 @@ export class QueueService {
 
   joinQueue = async () => await this.httpClient.postWithAuth('api/queue/join', {});
 
+  acceptMatch = async (opponentId: number) => await this.httpClient.postWithAuth(`api/queue/opponent/${opponentId}/accept-match`, {});
+
   unQueue = async () => await this.httpClient.deleteWithAuth('api/queue/cancel', {});
 }

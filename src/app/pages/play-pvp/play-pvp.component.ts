@@ -24,6 +24,7 @@ export class PlayPvpComponent implements OnInit, OnDestroy{
   searchRes: any[] = [];
   isSearched: boolean = false;
   modalRef!: NzModalRef; // Lưu trữ modal để có thể đóng
+  hasAccepted: boolean = false;
 
   private queueSubscription: any;
   private inviterSubscription: any;
@@ -58,6 +59,56 @@ export class PlayPvpComponent implements OnInit, OnDestroy{
               horizontalPosition: 'center',
               verticalPosition: 'bottom'
             });
+          }
+        }
+      });
+
+      this.queueSubscription = this.wsService.listenToQueue(responseObject => {
+        if (responseObject.message === 'Match found.') {
+          // Đóng modal tìm trận
+          this.modalRef.close();
+          // Mở modal đồng ý trận đấu: Nếu nhấn đồng ý thì gửi API acceptMatch và không đóng modal mà đợi thông báo từ websocket
+          this.modalRef = this.modal.create({
+            nzClosable: false,
+            nzTitle: 'Trận đấu đã được tìm thấy!',
+            nzContent: 'Bạn có muốn tham gia trận đấu này không?',
+            nzFooter: [
+              {
+                label: 'Đồng ý',
+                type: 'primary',
+                onClick: async () => {
+                  // Gửi API acceptMatch
+                  const res = await this.queueService.acceptMatch(responseObject.data);
+                  this.hasAccepted = true;
+                } 
+              }
+            ]
+          });
+        } else if (responseObject.message === 'The match is created.') {
+          // Đóng modal đồng ý trận đấu
+          this.modalRef.close();
+          // Navigate
+          this.router.navigate(['/match/' + responseObject.data.matchId]);
+        } else if (responseObject.message === 'Match accept timeout.') {
+          // Đóng modal đồng ý trận đấu
+          this.modalRef.close();
+          // Nếu người chơi đã bấm đồng ý thì gọi lại playNow()
+          if (this.hasAccepted) {
+            this.snackBar.open('Trận đấu đã bị hủy do toàn bộ người chơi chưa sẵn sàng, đang tìm trận mới...', 'Đóng', {
+              duration: 3000,
+              horizontalPosition: 'center',
+              verticalPosition: 'bottom'
+            });
+            this.hasAccepted = false;
+            this.playNow();
+          } else {
+            // Nếu chưa bấm đồng ý, chỉ thông báo
+            this.snackBar.open('Trận đấu đã bị hủy do toàn bộ người chơi chưa sẵn sàng...', 'Đóng', {
+              duration: 3000,
+              horizontalPosition: 'center',
+              verticalPosition: 'bottom'
+            });
+            this.wsService.setStatus('idle');
           }
         }
       });
@@ -132,10 +183,7 @@ export class PlayPvpComponent implements OnInit, OnDestroy{
       const handleModalClose = async () => {
         const res = await this.queueService.unQueue();
         if (res.status === 'ok') {
-          // Unsubscribe and close modal only when unQueue success
-          if (this.queueSubscription) {
-            this.queueSubscription.unsubscribe();
-          }
+          // Close modal only when unQueue success
           // Đóng modal tìm trận
           this.modalRef.close();
           // Đặt lại status về rảnh
@@ -155,16 +203,6 @@ export class PlayPvpComponent implements OnInit, OnDestroy{
             onClick: handleModalClose,
           }
         ]
-      });
-  
-      // Lắng nghe phản hồi từ server
-      this.queueSubscription = this.wsService.listenToQueue(responseObject => {
-        if (responseObject.data.status === 'MATCH_FOUND') {
-          // Đóng modal tìm trận
-          this.modalRef.close();
-          // Navigate
-          this.router.navigate(['/match/' + responseObject.data.matchId]);
-        }
       });
   
       // Get token
