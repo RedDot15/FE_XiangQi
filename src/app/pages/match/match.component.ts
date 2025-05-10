@@ -12,6 +12,7 @@ import { MatchWaitingModalComponent } from '../../components/match-waiting-modal
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { MatchResultModalComponent } from '../../components/match-result-modal/match-result-modal.component';
 import { MatchCancelModalComponent } from '../../components/match-cancel-modal/match-cancel-modal.component';
+import { NzModalService } from 'ng-zorro-antd/modal';
 
 interface Piece {
   type: 'xe' | 'ma' | 'tinh' | 'si' | 'tuong' | 'phao' | 'tot';
@@ -49,8 +50,8 @@ export class MatchComponent implements OnInit, OnDestroy {
     private route: ActivatedRoute,
     private cookieService: CookieService,
     private wsService: WebsocketService,
-    private moveValidator: MoveValidatorService,
     private dialog: MatDialog,
+    private modal: NzModalService // Inject NzModalService
   ) {
     this.wsService.setStatus('in_match');
   }
@@ -276,6 +277,29 @@ export class MatchComponent implements OnInit, OnDestroy {
   }
 
   onForfeitClick() {
-    this.matchService.forfeit(this.matchId);
+    this.modal.create({
+      nzClosable: false,
+      nzMaskClosable: false, // Ngăn đóng modal khi bấm vào backdrop
+      nzTitle: 'Xác nhận đầu hàng',
+      nzContent: 'Bạn có chắc chắn muốn đầu hàng trận đấu này không?',
+      nzFooter: [
+        {
+          label: 'Đầu hàng',
+          type: 'primary',
+          danger: true, // Đánh dấu nút đầu hàng là nguy hiểm
+          onClick: () => {
+            this.matchService.forfeit(this.matchId);
+            this.modal.closeAll();
+          }
+        },
+        {
+          label: 'Hủy',
+          type: 'default',
+          onClick: () => this.modal.closeAll()
+        },
+      ],
+      nzStyle: { textAlign: 'center' }, // Căn giữa toàn bộ nội dung
+      nzBodyStyle: { textAlign: 'center' }, // Căn giữa nội dung
+    });
   }
 }
