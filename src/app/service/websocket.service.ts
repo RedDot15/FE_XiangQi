@@ -178,6 +178,9 @@ export class WebsocketService {
 
   acceptInvite = async (username: string) => await this.httpClient.postWithAuth('api/ws/player/' + username + '/invitation-accept', {});
   
-  rejectInvite = async (username: string) => await this.httpClient.deleteWithAuth('api/ws/player/' + username + '/invitation-reject', {});
-  
+  async rejectInvite(username: string): Promise<any> {
+    const url = username ? `api/ws/player/${username}/invitation-reject` : 'api/ws/player/invitation-reject';
+    return await this.httpClient.deleteWithAuth(url, {});
+  }
+
 }

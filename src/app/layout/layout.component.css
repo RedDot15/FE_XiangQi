@@ -1,66 +1,60 @@
-.icon-header {
-    height: 50px;
-    width: 50px;
-    margin-left: 20px;
-    margin-right: 20px;
-}
-
+/* Lower z-index of header and menu */
 .header {
-    position: fixed;
-    height: 60px;
-    width: 100%;
-    background-color: rgb(194, 53, 46);
-    padding-left: 280px;
+  position: fixed;
+  height: 60px;
+  width: 100%;
+  background-color: rgb(194, 53, 46);
+  padding-left: 280px;
+  z-index: 999;
 }
 
 .main_menu_wrapper {
-    height: 100vh;
-    position: fixed;
-    z-index: 10;
+  height: 100vh;
+  position: fixed;
+  z-index: 1000;
+}
+
+/* Existing layout styles */
+.layout {
+  display: flex;
+  flex-direction: row;
+}
+
+.icon-header {
+  height: 50px;
+  width: 50px;
+  margin-left: 20px;
+  margin-right: 20px;
 }
 
 .main_menu {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 280px;
-    height: 100vh;
-    background-color: rgb(255, 251, 242);
-    box-shadow: rgba(0, 0, 0, 0.15) 1.95px 0 2.6px;
-    color: rgb(194, 53, 46);
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 280px;
+  height: 100vh;
+  background-color: rgb(255, 251, 242);
+  box-shadow: rgba(0, 0, 0, 0.15) 1.95px 0 2.6px;
+  color: rgb(194, 53, 46);
 }
 
 .main_menu_content {
-    height: calc(100vh-52px);
-    overflow-y: auto;
+  height: calc(100vh - 52px);
+  overflow-y: auto;
 }
 
 .main-content {
-    padding: 0 0 0 280px;
-    width: 100%;
-    min-height: 100vh;
-    transition: all .2s linear;
-
+  padding: 0 0 0 280px;
+  width: 100%;
+  min-height: 100vh;
+  transition: all 0.2s linear;
 }
 
 .content {
-    background-image: url("/assets/bg_game.jpg");
-    background-repeat: no-repeat;
-    background-size: cover; 
-    padding: 25px;
-    height: 100vh;
-    padding-top: 60px;
-    z-index: 10;
+  background-image: url("/assets/bg_game.jpg");
+  background-repeat: no-repeat;
+  background-size: cover;
+  padding: 25px;
+  height: 100vh;
+  padding-top: 60px;
 }
-/* 
-@media (max-width:780px) {
-    .main_menu_wrapper{
-        display: none;
-    }
-    .main-content{
-        padding: 0;
-    }
-    .header{
-        padding: 0;
-    }
-} */

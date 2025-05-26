@@ -1,10 +1,20 @@
 <div class="menu_content_wrapper">
     <div *ngFor="let item of menu" class="navbar-item-wrapper" (click)="onNavigate(item.path)">
-        <div class="item-wrapper d-flex align-items-center">
-                <img src="{{item.icon}}" alt="" class="icon">
-                <div class="item-name">
-                    {{item.name}}
-                </div>
+      <div class="item-wrapper d-flex align-items-center">
+        <img src="{{item.icon}}" alt="" class="icon">
+        <div class="item-name">
+          {{item.name}}
         </div>
+      </div>
     </div>
-</div>
+    <div class="invitations-wrapper">
+      <h4>Lời mời</h4>
+      <div *ngFor="let username of invitations" class="invitation-item">
+        <div>{{username}} đã mời bạn chơi một trận</div>
+        <div class="invitation-buttons">
+          <button nz-button nzType="primary" (click)="onAccept(username)">Đồng ý</button>
+          <button nz-button nzType="default" (click)="onDecline(username)">Từ chối</button>
+        </div>
+      </div>
+    </div>
+  </div>

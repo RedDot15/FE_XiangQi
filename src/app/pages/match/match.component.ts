@@ -7,7 +7,6 @@ import { CookieService } from '../../service/cookie.service';
 import { jwtDecode } from 'jwt-decode';
 import { WebsocketService } from '../../service/websocket.service';
 import { MoveRequest } from '../../models/request/move.request';
-import { MoveValidatorService } from '../../service/move-validator.service';
 import { MatchWaitingModalComponent } from '../../components/match-waiting-modal/match-waiting-modal.component';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { MatchResultModalComponent } from '../../components/match-result-modal/match-result-modal.component';
@@ -57,6 +56,7 @@ export class MatchComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
+    this.wsService.rejectInvite('');
     this.getMatchState();
   }
 

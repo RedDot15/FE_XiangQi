@@ -1,16 +1,21 @@
 /* You can add global styles to this file, and also import other style files */
 
-html, body { height: 100%; }
-body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+html, body { 
+  height: 100%; 
+}
+body { 
+  margin: 0; 
+  font-family: Roboto, "Helvetica Neue", sans-serif; 
+}
 
-.custom-backdrop {
-    z-index: 1040 !important; /* mặc định backdrop của Bootstrap */
-  }
-  
-  .custom-modal {
-    z-index: 1050 !important; /* modal cao hơn backdrop */
-  }
-  
-  .cdk-overlay-container {
-    z-index: 2000 !important;
-  }
+/* Đảm bảo overlay container có z-index cao */
+.cdk-overlay-container {
+  z-index: 10000 !important;
+}
+
+/* Đảm bảo nội dung chính không bị che */
+router-outlet + * {
+  position: relative;
+  z-index: 1 !important;
+  pointer-events: auto !important;
+}

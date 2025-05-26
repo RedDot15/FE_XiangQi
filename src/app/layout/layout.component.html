@@ -1,21 +1,21 @@
 <div class="layout">
-    <div class="main_menu_wrapper">
-        <div class="main_menu">
-            <div class="d-flex align-items-center mt-3 mb-3" (click)="onNavigateHome()">
-                <img src="assets/board_images/tuong_red.png" class="icon-header">
-                <h3>Cờ tướng</h3>
-            </div>
-            <div class="main_menu_content">
-                <app-navbar></app-navbar>
-            </div>
-        </div>
+  <div class="main_menu_wrapper">
+    <div class="main_menu">
+      <div class="d-flex align-items-center mt-3 mb-3" (click)="onNavigateHome()">
+        <img src="assets/board_images/tuong_red.png" class="icon-header">
+        <h3>Cờ tướng</h3>
+      </div>
+      <div class="main_menu_content">
+        <app-navbar></app-navbar>
+      </div>
     </div>
-    <div class="header">
-        <app-header></app-header>
+  </div>
+  <div class="header">
+    <app-header></app-header>
+  </div>
+  <div class="main-content">
+    <div class="content">
+      <router-outlet></router-outlet>
     </div>
-    <div class="main-content">
-        <div class="content">
-            <router-outlet></router-outlet>
-        </div>
-    </div>
+  </div>
 </div>
