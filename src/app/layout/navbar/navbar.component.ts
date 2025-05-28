@@ -35,7 +35,7 @@ export class NavbarComponent implements OnInit, OnDestroy {
           const username = responseObject.data;
           this.invitations = this.invitations.filter(inv => inv !== username); // Xóa lời mời bị hủy
         } else if (responseObject.status === 'ok' && responseObject.message === 'CUSTOM_MATCH_CREATED') {
-          this.router.navigate(['/match/' + responseObject.data.matchId]);
+          this.router.navigate(['/match/' + responseObject.data]);
         }
       });
     });

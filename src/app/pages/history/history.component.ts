@@ -7,6 +7,7 @@ import { jwtDecode } from 'jwt-decode';
 import { CookieService } from '../../service/cookie.service';
 import { ActivatedRoute, ParamMap } from '@angular/router';
 import { switchMap } from 'rxjs';
+import { HistoryService } from '../../service/history.service';
 
 @Component({
     selector: 'app-history',
@@ -29,7 +30,7 @@ export class HistoryComponent implements OnInit {
     userId: string | null = null;
 
     constructor(
-        private matchService: MatchService,
+        private historyService: HistoryService,
         private wsService: WebsocketService,
         private cookieService: CookieService,
         private route: ActivatedRoute,) {}
@@ -50,7 +51,7 @@ export class HistoryComponent implements OnInit {
         // Get the user ID from the route parameters
         this.userId = this.route.snapshot.paramMap.get('id')!;
         // Get match-history
-        const res = await this.matchService.getPlayerMatches(this.currentPage, this.pageSize, Number(this.userId));
+        const res = await this.historyService.getAllByUserId(this.currentPage, this.pageSize, Number(this.userId));
         // Binding data
         this.matches = res.data.content;
         this.totalPages = res.data.totalPages;

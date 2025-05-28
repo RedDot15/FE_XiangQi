@@ -93,6 +93,40 @@ export class HttpClientService {
     }
   }
 
+  async patchWithAuth(path: string, body: any): Promise<any> {
+    const url = `${environment.baseUrl}/${path}`;
+    const token = this.cookieService.getToken();
+
+    const headers = new HttpHeaders({
+      'Content-Type': 'application/json; charset=utf-8',
+      'Authorization': `Bearer ${token}`
+    });
+
+    try {
+      return await lastValueFrom(this.http.patch<any>(url, body, {
+        headers: headers
+      }));
+    } catch (error: any) {
+      if (error.status === 401) {
+        if (this.isRefreshing) {
+          const isRefreshed = await this.refreshPromise!;
+          if (isRefreshed) {
+            return await this.patchWithAuth(path, body);
+          }
+          this.router.navigate(['/login']);
+          return null;
+        }
+        const isRefreshed = await this.refreshToken(this.cookieService.getRefreshToken());
+        if (isRefreshed) {
+          return await this.patchWithAuth(path, body);
+        }
+        this.router.navigate(['/login']);
+        return null;
+      }
+      throw error;
+    }
+  }
+
   async deleteWithAuth(path: string, params: any): Promise<any> {
     const url = `${environment.baseUrl}/${path}`;
     const token = this.cookieService.getToken();

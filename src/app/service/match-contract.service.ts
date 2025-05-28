@@ -4,13 +4,11 @@ import { HttpClientService } from './http-client.service';
 @Injectable({
   providedIn: 'root',
 })
-export class QueueService {
+export class MatchContractService {
 
   constructor(
     private httpClient: HttpClientService) {
   }
 
-  joinQueue = async () => await this.httpClient.postWithAuth('api/queue/join', {});
-
-  unQueue = async () => await this.httpClient.deleteWithAuth('api/queue/cancel', {});
+  accept = async (matchContractId: string) => await this.httpClient.patchWithAuth(`api/match-contracts/${matchContractId}/accept`, {});
 }

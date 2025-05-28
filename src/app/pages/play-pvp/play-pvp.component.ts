@@ -6,6 +6,7 @@ import { WebsocketService } from '../../service/websocket.service';
 import { QueueService } from '../../service/queue.service';
 import { Router } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { MatchContractService } from '../../service/match-contract.service';
 
 @Component({
   selector: 'app-play-pvp',
@@ -28,11 +29,13 @@ export class PlayPvpComponent implements OnInit, OnDestroy{
 
   private queueSubscription: any;
   private inviterSubscription: any;
+  private matchContractSubscription: any;
 
   constructor(
     private modal: NzModalService, 
     private wsService: WebsocketService, 
     private queueService: QueueService,
+    private matchContractService: MatchContractService,
     private snackBar: MatSnackBar,
     private router: Router) {
       // Set websocket status
@@ -47,7 +50,7 @@ export class PlayPvpComponent implements OnInit, OnDestroy{
             // Đóng modal mời 
             this.modalRef.close();
             // Navigate
-            this.router.navigate(['/match/' + responseObject.data.matchId]);
+            this.router.navigate(['/match/' + responseObject.data]);
           }
         } else if (responseObject.status === 'ok' && responseObject.message == "INVITATION_REJECTED") { // Nếu đối thủ từ chối lời mời
           if (this.modalRef) {
@@ -63,10 +66,34 @@ export class PlayPvpComponent implements OnInit, OnDestroy{
         }
       });
 
-      this.queueSubscription = this.wsService.listenToQueue(async responseObject => {
+      this.queueSubscription = await this.wsService.listenToQueue(async responseObject => {
         if (responseObject.message === 'Match found.') {
           // Đóng modal tìm trận
           this.modalRef.close();
+
+          this.matchContractSubscription = await this.wsService.listenToMatchContract(responseObject.data, async responseObject => {
+            if (responseObject.message === 'Match contract timeout.') {
+              this.modalRef.close();
+              this.matchContractSubscription.unsubscribe();
+    
+              if (this.hasAccepted) {
+                this.snackBar.open('Trận đấu đã bị hủy do toàn bộ người chơi chưa sẵn sàng, đang tìm trận mới...', 'Đóng', {
+                  duration: 3000,
+                  horizontalPosition: 'center',
+                  verticalPosition: 'bottom'
+                });
+                this.hasAccepted = false;
+                this.playNow();
+              } else {
+                this.snackBar.open('Trận đấu đã bị hủy do toàn bộ người chơi chưa sẵn sàng...', 'Đóng', {
+                  duration: 3000,
+                  horizontalPosition: 'center',
+                  verticalPosition: 'bottom'
+                });
+                this.wsService.setStatus('idle');
+              }
+            }
+          })
 
           const createFooter = (loading: boolean): ModalButtonOptions[] => [
             {
@@ -75,7 +102,7 @@ export class PlayPvpComponent implements OnInit, OnDestroy{
               loading,
               onClick: async () => {
                 this.hasAccepted = true;
-                await this.queueService.acceptMatch(responseObject.data);
+                await this.matchContractService.accept(responseObject.data);
                 // Đợi phản hồi từ WebSocket, không đóng modal ở đây
                 await new Promise(resolve => setTimeout(resolve, 6000));
               }
@@ -94,28 +121,9 @@ export class PlayPvpComponent implements OnInit, OnDestroy{
           });
         } else if (responseObject.message === 'The match is created.') {
           this.modalRef.close();
-          this.router.navigate(['/match/' + responseObject.data.matchId]);
-
-        } else if (responseObject.message === 'Match accept timeout.') {
-          this.modalRef.close();
-
-          if (this.hasAccepted) {
-            this.snackBar.open('Trận đấu đã bị hủy do toàn bộ người chơi chưa sẵn sàng, đang tìm trận mới...', 'Đóng', {
-              duration: 3000,
-              horizontalPosition: 'center',
-              verticalPosition: 'bottom'
-            });
-            this.hasAccepted = false;
-            this.playNow();
-          } else {
-            this.snackBar.open('Trận đấu đã bị hủy do toàn bộ người chơi chưa sẵn sàng...', 'Đóng', {
-              duration: 3000,
-              horizontalPosition: 'center',
-              verticalPosition: 'bottom'
-            });
-            this.wsService.setStatus('idle');
-          }
-        }
+          this.matchContractSubscription.unsubscribe();
+          this.router.navigate(['/match/' + responseObject.data]);
+        } 
       });
 
     }
@@ -230,8 +238,6 @@ export class PlayPvpComponent implements OnInit, OnDestroy{
     }
     // Gọi unInvite để thu hồi mọi lời mời
     this.wsService.unInvite('');
-    // Gọi unQueue để xóa người chơi khỏi hàng đợi
-    this.queueService.unQueue();
   }
 
   @HostListener('window:beforeunload', ['$event'])

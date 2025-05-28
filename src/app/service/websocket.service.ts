@@ -91,6 +91,17 @@ export class WebsocketService {
     return null;
   }
 
+  public async listenToMatchContract(matchContractId: string, fun: ListenerCallBack) {
+    // Wait for connection to be established
+    await this.connectionPromise;
+
+    if (this.connection) {
+      return this.connection.subscribe('/topic/match-contract/' + matchContractId, message => 
+        fun(JSON.parse(message.body))); 
+    }
+    return null;
+  }
+
   public async listenToInvite(fun: ListenerCallBack) {
     const token = this.cookieService.getToken();
 

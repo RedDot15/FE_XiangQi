@@ -12,21 +12,15 @@ export class MatchService {
     private httpClient: HttpClientService) {
   }
   
-  getPlayerMatches = async (page: number, size: number, userId: number) => await this.httpClient.getWithAuth("api/match/", {
-    page: page,
-    size: size,
-    userId: userId
-  })
-
-  createAImatch = async (mode: string) =>  await this.httpClient.postWithAuth("api/match/ai", { mode });
+  createAImatch = async (mode: string) =>  await this.httpClient.postWithAuth("api/matches/ai", { mode });
   
-  getMatch = async (matchId: string) => await this.httpClient.getWithAuth("api/match/" + matchId, {});
+  getMatch = async (matchId: string) => await this.httpClient.getWithAuth("api/matches/" + matchId, {});
 
-  move = async (matchId: string, move: MoveRequest) => await this.httpClient.postWithAuth("api/match/" + matchId + "/move", move);
+  move = async (matchId: string, move: MoveRequest) => await this.httpClient.postWithAuth("api/matches/" + matchId + "/move", move);
 
-  moveAI = async (matchId: string, move: MoveRequest) => await this.httpClient.postWithAuth("api/match/" + matchId + "/moveAI", move);
+  moveAI = async (matchId: string, move: MoveRequest) => await this.httpClient.postWithAuth("api/matches/" + matchId + "/moveAI", move);
 
-  ready = async (matchId: string) => await this.httpClient.postWithAuth("api/match/" + matchId + "/ready", {});
+  ready = async (matchId: string) => await this.httpClient.postWithAuth("api/matches/" + matchId + "/ready", {});
   
-  forfeit = async (matchId: string) => await this.httpClient.putWithAuth("api/match/" + matchId + "/resign", {});
+  forfeit = async (matchId: string) => await this.httpClient.putWithAuth("api/matches/" + matchId + "/resign", {});
 }
