@@ -7,10 +7,8 @@ import { CookieService } from '../../service/cookie.service';
 import { jwtDecode } from 'jwt-decode';
 import { WebsocketService } from '../../service/websocket.service';
 import { MoveRequest } from '../../models/request/move.request';
-import { MatchWaitingModalComponent } from '../../components/match-waiting-modal/match-waiting-modal.component';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { MatchResultModalComponent } from '../../components/match-result-modal/match-result-modal.component';
-import { MatchCancelModalComponent } from '../../components/match-cancel-modal/match-cancel-modal.component';
 import { NzModalService } from 'ng-zorro-antd/modal';
 
 interface Piece {
@@ -42,7 +40,6 @@ export class MatchComponent implements OnInit, OnDestroy {
 
   private timerInterval: any;
   private matchSubscription: any;
-  private dialogRef: MatDialogRef<MatchWaitingModalComponent> | null = null;
 
   constructor(
     private matchService: MatchService,
@@ -81,7 +78,7 @@ export class MatchComponent implements OnInit, OnDestroy {
       // Get match state
       const matchState = await this.matchService.getMatch(this.matchId);
       // Get player's faction
-      const isRedPlayer = matchState.data.redPlayerId == uid;
+      const isRedPlayer = matchState.data.redPlayer.id == uid;
 
       // Convert boardState 
       this.board = this.convertBoardState(matchState.data.boardState);
@@ -90,108 +87,42 @@ export class MatchComponent implements OnInit, OnDestroy {
       // Get current turn
       this.currentPlayer = matchState.data.turn == uid ? this.playerView : this.playerView == 'red' ? 'black' : 'red';
       // Get players name
-      this.opponentName = isRedPlayer ? matchState.data.blackPlayerName : matchState.data.redPlayerName;
-      this.playerName = isRedPlayer ? matchState.data.redPlayerName : matchState.data.blackPlayerName;
+      this.opponentName = isRedPlayer ? matchState.data.blackPlayer.name : matchState.data.redPlayer.name;
+      this.playerName = isRedPlayer ? matchState.data.redPlayer.name : matchState.data.blackPlayer.name;
       // Get players rating
-      this.opponentRating = isRedPlayer ? matchState.data.blackPlayerRating : matchState.data.redPlayerRating;
-      this.playerRating = isRedPlayer ? matchState.data.redPlayerRating : matchState.data.blackPlayerRating;
+      this.opponentRating = isRedPlayer ? matchState.data.blackPlayer.rating : matchState.data.redPlayer.rating;
+      this.playerRating = isRedPlayer ? matchState.data.redPlayer.rating : matchState.data.blackPlayer.rating;
       // Get players time left
-      this.redPlayerTotalTimeLeft = Math.round(matchState.data.redPlayerTimeLeft / 1000) ;
-      this.blackPlayerTotalTimeLeft = Math.round(matchState.data.blackPlayerTimeLeft / 1000);
+      this.redPlayerTotalTimeLeft = Math.round(matchState.data.redPlayer.totalTimeLeft / 1000) ;
+      this.blackPlayerTotalTimeLeft = Math.round(matchState.data.blackPlayer.totalTimeLeft / 1000);
       // Get lastMoveTime
       this.lastMoveTime = matchState.data.lastMoveTime;
 
-      // If response contain lastMoveTime => the match is already start
-      if (this.lastMoveTime != null) {
-        // Setup & Start the timer
-        this.setupTimer();
-        this.startTimer();
-        // Listening for opponent's move from server
-        this.matchSubscription = await this.wsService.listenToMatch(responseObject => {
-          if (responseObject.status === 'ok' && responseObject.message == "Piece moved.") {
-            const move = responseObject.data;
-            // Move the piece
-            this.board[move.to.row][move.to.col] = this.board[move.from.row][move.from.col];
-            this.board[move.from.row][move.from.col] = null;
-            // Switch turn
-            this.togglePlayer();
-          } else if (responseObject.status === 'ok' && responseObject.message == "Match finished.") {
-            const res = responseObject.data;
-            // Open match result notification modal
-            this.dialog.open(MatchResultModalComponent, {
-              disableClose: true,
-              width: '400px', // Đặt kích thước modal
-              data: {
-                result: res.result, // "WIN" or "LOSE"
-                ratingChange: res.ratingChange // +10 or -10
-              }
-            });  
-          }
-        });
-      } else {
-        // Open a modal to block moves and notify that match is not ready
-        this.dialogRef = this.dialog.open(MatchWaitingModalComponent, {
-          disableClose: true, // Prevent closing by clicking outside or pressing ESC
-          width: '300px'
-        });
-        
-        // Listen for match ready 
-        this.matchSubscription = await this.wsService.listenToMatch(async responseObject => {
-          if (responseObject.status === 'ok' && responseObject.message == 'The match is start.') {
-            // Close the waiting opponent modal
-            if (this.dialogRef) {
-              this.dialogRef.close();
-              this.dialogRef = null;
+      // Setup & Start the timer
+      this.setupTimer();
+      this.startTimer();
+      // Listening for opponent's move from server
+      this.matchSubscription = await this.wsService.listenToMatch(this.matchId, responseObject => {
+        if (responseObject.status === 'ok' && responseObject.message == "Piece moved.") {
+          const move = responseObject.data;
+          // Move the piece
+          this.board[move.to.row][move.to.col] = this.board[move.from.row][move.from.col];
+          this.board[move.from.row][move.from.col] = null;
+          // Switch turn
+          this.togglePlayer();
+        } else if (responseObject.status === 'ok' && responseObject.message == "Match finished.") {
+          const res = responseObject.data;
+          // Open match result notification modal
+          this.dialog.open(MatchResultModalComponent, {
+            disableClose: true,
+            width: '400px', // Đặt kích thước modal
+            data: {
+              result: res.winner === this.playerView ? "WIN" : "LOSE", // "WIN" or "LOSE"
+              ratingChange: res.winner === this.playerView ? res.ratingGain : res.ratingLoss // +10 or -10
             }
-
-            // Close the ready subscription
-            this.matchSubscription.unsubscribe();
-            // Get response data
-            const data = responseObject.data;
-            // Update last move time
-            this.lastMoveTime = data.lastMoveTime;
-            // Setup & Start timer
-            this.setupTimer();
-            this.startTimer();
-            // Listening for opponent's move from server
-            this.matchSubscription = await this.wsService.listenToMatch(responseObject => {
-              if (responseObject.status === 'ok' && responseObject.message == "Piece moved.") {
-                const move = responseObject.data;
-                // Move the piece
-                this.board[move.to.row][move.to.col] = this.board[move.from.row][move.from.col];
-                this.board[move.from.row][move.from.col] = null;
-                // Switch turn
-                this.togglePlayer();
-              } else if (responseObject.status === 'ok' && responseObject.message == "Match finished.") {
-                const res = responseObject.data;
-                // Open match result notification modal
-                this.dialog.open(MatchResultModalComponent, {
-                  disableClose: true,
-                  width: '400px', // Đặt kích thước modal
-                  data: {
-                    result: res.result, // "WIN" or "LOSE"
-                    ratingChange: res.ratingChange // +10 or -10
-                  }
-                });  
-              }
-            });
-          } else if (responseObject.status === 'ok' && responseObject.message == "Match cancel.") {
-            const res = responseObject.data;
-            // Close the waiting opponent modal
-            if (this.dialogRef) {
-              this.dialogRef.close();
-              this.dialogRef = null;
-            }
-            // Open match cancel notification modal
-            this.dialog.open(MatchCancelModalComponent, {
-              disableClose: true,
-              width: '400px'
-            });
-          }
-        });
-        // send match ready request
-        this.matchService.ready(this.matchId);
-      };
+          });  
+        }
+      });
     } else {
       console.error('Match ID not found in route parameters');
     }

@@ -45,14 +45,14 @@ export class PlayPvpComponent implements OnInit, OnDestroy{
     async ngOnInit(): Promise<void> {
       // Add websocket listener to handle invitation response
       this.inviterSubscription = await this.wsService.listenToInvite(responseObject => {
-        if (responseObject.status === 'ok' && responseObject.message == "INVITATION_ACCEPTED") { // Nếu đối thủ chấp nhận lời mời
+        if (responseObject.status === 'ok' && responseObject.message == "Invitation accepted.") { // Nếu đối thủ chấp nhận lời mời
           if (this.modalRef) {
             // Đóng modal mời 
             this.modalRef.close();
             // Navigate
             this.router.navigate(['/match/' + responseObject.data]);
           }
-        } else if (responseObject.status === 'ok' && responseObject.message == "INVITATION_REJECTED") { // Nếu đối thủ từ chối lời mời
+        } else if (responseObject.status === 'ok' && responseObject.message == "Invitation rejected.") { // Nếu đối thủ từ chối lời mời
           if (this.modalRef) {
             // Đóng modal mời 
             this.modalRef.close();
@@ -92,7 +92,11 @@ export class PlayPvpComponent implements OnInit, OnDestroy{
                 });
                 this.wsService.setStatus('idle');
               }
-            }
+            } else if (responseObject.message === 'The match is created.') {
+              this.modalRef.close();
+              this.matchContractSubscription.unsubscribe();
+              this.router.navigate(['/match/' + responseObject.data]);
+            } 
           })
 
           const createFooter = (loading: boolean): ModalButtonOptions[] => [
@@ -119,11 +123,7 @@ export class PlayPvpComponent implements OnInit, OnDestroy{
             nzStyle: { textAlign: 'center' }, // Căn giữa toàn bộ nội dung
             nzBodyStyle: { textAlign: 'center' }, // Căn giữa nội dung
           });
-        } else if (responseObject.message === 'The match is created.') {
-          this.modalRef.close();
-          this.matchContractSubscription.unsubscribe();
-          this.router.navigate(['/match/' + responseObject.data]);
-        } 
+        }
       });
 
     }

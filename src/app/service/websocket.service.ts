@@ -118,17 +118,12 @@ export class WebsocketService {
     return null;
   }
 
-  public async listenToMatch(fun: ListenerCallBack) {
-    const token = this.cookieService.getToken();
-
-    // Decode the JWT to get the user ID
-    const uid = this.getUidFromToken(token);
-    
+  public async listenToMatch(matchId: string, fun: ListenerCallBack) {
     // Wait for connection to be established
     await this.connectionPromise;
     
     if (this.connection) {
-      return this.connection.subscribe('/topic/match/player/' + uid, message => 
+      return this.connection.subscribe('/topic/match/' + matchId, message => 
         fun(JSON.parse(message.body))); 
     }
     return null;
