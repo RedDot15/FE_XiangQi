@@ -3,6 +3,8 @@ import { Component, OnInit } from '@angular/core';
 import { WebsocketService } from '../../service/websocket.service';
 import { PlayerService } from '../../service/player.service';
 import { Router } from '@angular/router';
+import {InvitationService} from "../../service/invitation.service";
+import {OnlinePlayerService} from "../../service/online-player.service";
 
 @Component({
   selector: 'app-leader-board',
@@ -16,13 +18,14 @@ import { Router } from '@angular/router';
 })
 export class LeaderBoardComponent implements OnInit {
   topPlayers: any = [];
-  
+
   constructor (
     private wsService: WebsocketService,
+    private onlinePlayerService: OnlinePlayerService,
     private playerService: PlayerService,
     private router: Router,
   ) {
-    this.wsService.setStatus('idle');
+    this.onlinePlayerService.setStatus('IDLE');
   }
 
   async ngOnInit() {
@@ -31,7 +34,7 @@ export class LeaderBoardComponent implements OnInit {
       this.topPlayers = res.data;
     }
   }
-  
+
   onNavigateHistory(id: string){
     this.router.navigate(['/match-history/' + id]);
   }

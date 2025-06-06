@@ -280,7 +280,7 @@ export class HttpClientService {
     this.isRefreshing = true;
     console.log('Refresh token...');
 
-    const path = `api/auth/token/refresh`;
+    const path = `api/auth/tokens/refresh`;
     const body = { refreshToken: refreshToken };
 
     try {

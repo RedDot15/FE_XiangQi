@@ -1,5 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClientService } from './http-client.service';
+import {WebsocketService} from "./websocket.service";
+import {AuthService} from "./auth.service";
 
 @Injectable({
   providedIn: 'root',
@@ -7,8 +9,14 @@ import { HttpClientService } from './http-client.service';
 export class MatchContractService {
 
   constructor(
-    private httpClient: HttpClientService) {
-  }
+    private wsService: WebsocketService,
+    private authService: AuthService,
+  ) {}
 
-  accept = async (matchContractId: string) => await this.httpClient.patchWithAuth(`api/match-contracts/${matchContractId}/accept`, {});
+  public accept(matchContractId: string) {
+    this.wsService.sendWebSocketMessage('/app/match-contract.accept', {
+      matchContractId: matchContractId,
+      acceptorId: this.authService.getUserId(),
+    });
+  }
 }

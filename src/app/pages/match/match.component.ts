@@ -1,6 +1,6 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { BoardComponent } from '../../components/board/board.component';
-import { GameSidebarComponent } from '../../components/game_sidebar/game-sidebar.component'; 
+import { GameSidebarComponent } from '../../components/game_sidebar/game-sidebar.component';
 import { MatchService } from '../../service/match.service';
 import { ActivatedRoute } from '@angular/router';
 import { CookieService } from '../../service/cookie.service';
@@ -10,6 +10,9 @@ import { MoveRequest } from '../../models/request/move.request';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { MatchResultModalComponent } from '../../components/match-result-modal/match-result-modal.component';
 import { NzModalService } from 'ng-zorro-antd/modal';
+import {InvitationService} from "../../service/invitation.service";
+import {OnlinePlayerService} from "../../service/online-player.service";
+import {AuthService} from "../../service/auth.service";
 
 interface Piece {
   type: 'xe' | 'ma' | 'tinh' | 'si' | 'tuong' | 'phao' | 'tot';
@@ -44,16 +47,18 @@ export class MatchComponent implements OnInit, OnDestroy {
   constructor(
     private matchService: MatchService,
     private route: ActivatedRoute,
-    private cookieService: CookieService,
+    private authService: AuthService,
+    private invitationService: InvitationService,
+    private onlinePlayerService: OnlinePlayerService,
     private wsService: WebsocketService,
     private dialog: MatDialog,
     private modal: NzModalService // Inject NzModalService
   ) {
-    this.wsService.setStatus('in_match');
+    this.onlinePlayerService.setStatus('IN_MATCH');
   }
 
   ngOnInit() {
-    this.wsService.rejectInvite('');
+    this.invitationService.rejectInvite('');
     this.getMatchState();
   }
 
@@ -67,10 +72,8 @@ export class MatchComponent implements OnInit, OnDestroy {
   }
 
   async getMatchState() {
-    // Get access token
-    const token = this.cookieService.getToken();
-    // Decode the JWT to get the user ID
-    const uid = this.getUidFromToken(token);
+    // Get UID
+    const uid = this.authService.getUserId();
 
     // Get the match ID from the route parameters
     this.matchId = this.route.snapshot.paramMap.get('id')!;
@@ -80,7 +83,7 @@ export class MatchComponent implements OnInit, OnDestroy {
       // Get player's faction
       const isRedPlayer = matchState.data.redPlayer.id == uid;
 
-      // Convert boardState 
+      // Convert boardState
       this.board = this.convertBoardState(matchState.data.boardState);
       // Initial view
       this.playerView = isRedPlayer ? 'red' : 'black';
@@ -102,16 +105,16 @@ export class MatchComponent implements OnInit, OnDestroy {
       this.setupTimer();
       this.startTimer();
       // Listening for opponent's move from server
-      this.matchSubscription = await this.wsService.listenToMatch(this.matchId, responseObject => {
-        if (responseObject.status === 'ok' && responseObject.message == "Piece moved.") {
-          const move = responseObject.data;
+      this.matchSubscription = await this.wsService.listenToMatch(this.matchId, messageObject => {
+        if (messageObject.message == "Piece moved.") {
+          const move = messageObject.data;
           // Move the piece
           this.board[move.to.row][move.to.col] = this.board[move.from.row][move.from.col];
           this.board[move.from.row][move.from.col] = null;
           // Switch turn
           this.togglePlayer();
-        } else if (responseObject.status === 'ok' && responseObject.message == "Match finished.") {
-          const res = responseObject.data;
+        } else if (messageObject.message == "Match finished.") {
+          const res = messageObject.data;
           // Open match result notification modal
           this.dialog.open(MatchResultModalComponent, {
             disableClose: true,
@@ -120,7 +123,7 @@ export class MatchComponent implements OnInit, OnDestroy {
               result: res.winner === this.playerView ? "WIN" : "LOSE", // "WIN" or "LOSE"
               ratingChange: res.winner === this.playerView ? res.ratingGain : res.ratingLoss // +10 or -10
             }
-          });  
+          });
         }
       });
     } else {
@@ -128,16 +131,6 @@ export class MatchComponent implements OnInit, OnDestroy {
     }
   }
 
-  private getUidFromToken(token: string): string | null {
-    try {
-      const decoded: any = jwtDecode(token);
-      return decoded.uid || null;
-    } catch (error) {
-      console.error('Error decoding JWT:', error);
-      return null;
-    }
-  }
-  
   private convertBoardState(boardState: string[][]): (Piece | null)[][] {
     const pieceMap: { [key: string]: Piece } = {
       'r': { type: 'xe', color: 'black' },
@@ -162,14 +155,14 @@ export class MatchComponent implements OnInit, OnDestroy {
   }
 
   private setupTimer() {
-    // Get elapsed time 
+    // Get elapsed time
     const elapsed = Math.floor((Date.now() - new Date(this.lastMoveTime!).getTime()) / 1000);
     // Setup time left of current player
     if (this.currentPlayer === 'red') {
       this.redPlayerTotalTimeLeft = this.redPlayerTotalTimeLeft - elapsed;
       this.redPlayerTurnTimeLeft = this.redPlayerTurnTimeLeft - elapsed;
     }
-    else 
+    else
       this.blackPlayerTotalTimeLeft = this.blackPlayerTotalTimeLeft - elapsed;
     this.blackPlayerTurnTimeLeft = this.blackPlayerTurnTimeLeft - elapsed;
   }
@@ -194,9 +187,9 @@ export class MatchComponent implements OnInit, OnDestroy {
 
   private togglePlayer() {
     // Reset turn-timer
-    if (this.currentPlayer === 'red') 
+    if (this.currentPlayer === 'red')
       this.redPlayerTurnTimeLeft = 1 * 60;
-    else 
+    else
       this.blackPlayerTurnTimeLeft = 1 * 60;
     // Switch turn
     this.currentPlayer = this.currentPlayer === 'red' ? 'black' : 'red';

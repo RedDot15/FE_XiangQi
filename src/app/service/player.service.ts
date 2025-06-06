@@ -14,11 +14,11 @@ export class PlayerService {
         private httpClient: HttpClientService,
     ) {}
 
-  getMyInfo = async () => await this.httpClient.getWithAuth('api/players/my-info/get', {});
+  getMyInfo = async () => await this.httpClient.getWithAuth('api/players/me', {});
 
-  getAll = async (role: string) => await this.httpClient.getWithAuth('api/players/', {role: role});
-  
-  register = async (auth: AuthRequest) => await this.httpClient.post('api/players/register', auth);
+  getAll = async (role: string) => await this.httpClient.getWithAuth('api/players', {role: role});
 
-  changePassword = async (request: ChangePasswordRequest) => await this.httpClient.putWithAuth('api/players/change-password', request)
+  register = async (auth: AuthRequest) => await this.httpClient.post('api/players', auth);
+
+  changePassword = async (request: ChangePasswordRequest) => await this.httpClient.putWithAuth('api/players', request)
 }

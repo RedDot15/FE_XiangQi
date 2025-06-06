@@ -9,10 +9,9 @@ export class HistoryService {
   constructor(
     private httpClient: HttpClientService) {
   }
-  
-  getAllByUserId = async (page: number, size: number, userId: number) => await this.httpClient.getWithAuth("api/histories/", {
-    page: page,
-    size: size,
-    userId: userId
-  })
+
+  getAllByUserId =
+    async (page: number, size: number, userId: number) => await this.httpClient.getWithAuth(
+      "api/histories",
+      {page: page, size: size, userId: userId})
 }

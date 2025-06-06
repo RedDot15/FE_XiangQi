@@ -2,6 +2,7 @@ import { Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { NgIf, NgFor, NgClass } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { WebsocketService } from '../../service/websocket.service';
+import {ChatService} from "../../service/chat.service";
 
 interface ChatMessage {
   sender: string;
@@ -33,16 +34,18 @@ export class GameSidebarComponent implements OnInit, OnDestroy{
   newMessage: string = '';
   chatSubscription: any;
 
-  constructor(private wsService: WebsocketService) {}
+  constructor(
+    private wsService: WebsocketService,
+    private chatService: ChatService) {}
 
   async ngOnInit() {
     // Listen for chat messages from WebSocket
-    this.chatSubscription = await this.wsService.listenToChat(this.matchId, responseObject => {
-      if (responseObject.status === 'ok' && responseObject.message == "Message received.") {
+    this.chatSubscription = await this.wsService.listenToChat(this.matchId, messageObject => {
+      if (messageObject.message == "Chat message received.") {
         this.chatMessages.push({
-          sender: responseObject.data.sender,
-          message: responseObject.data.message,
-          timestamp: new Date(responseObject.data.timestamp).toLocaleTimeString()
+          sender: messageObject.data.sender,
+          message: messageObject.data.message,
+          timestamp: new Date(messageObject.data.timestamp).toLocaleTimeString()
         })
       }
     });
@@ -56,7 +59,11 @@ export class GameSidebarComponent implements OnInit, OnDestroy{
 
   sendMessage() {
     if (this.newMessage.trim()) {
-      this.wsService.sendChatMessage(this.matchId, this.newMessage, this.playerName);
+      this.chatService.sendChat({
+        matchId: this.matchId,
+        sender: this.playerName,
+        message: this.newMessage,
+      });
       this.newMessage = '';
     }
   }

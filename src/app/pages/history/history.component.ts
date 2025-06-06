@@ -8,6 +8,8 @@ import { CookieService } from '../../service/cookie.service';
 import { ActivatedRoute, ParamMap } from '@angular/router';
 import { switchMap } from 'rxjs';
 import { HistoryService } from '../../service/history.service';
+import {InvitationService} from "../../service/invitation.service";
+import {OnlinePlayerService} from "../../service/online-player.service";
 
 @Component({
     selector: 'app-history',
@@ -31,13 +33,12 @@ export class HistoryComponent implements OnInit {
 
     constructor(
         private historyService: HistoryService,
-        private wsService: WebsocketService,
-        private cookieService: CookieService,
+        private onlinePlayerService: OnlinePlayerService,
         private route: ActivatedRoute,) {}
 
     ngOnInit(): void {
         // Wait for WebSocket connection before setting status
-        this.wsService.setStatus('idle');
+        this.onlinePlayerService.setStatus('IDLE');
 
         // Theo dõi sự thay đổi của tham số route để cập nhật data
         this.route.paramMap.subscribe((params: ParamMap) => {
@@ -64,15 +65,5 @@ export class HistoryComponent implements OnInit {
         }
         this.currentPage = page;
         this.loadMatches();
-    }
-
-    private getUidFromToken(token: string): string | null {
-    try {
-        const decoded: any = jwtDecode(token);
-        return decoded.uid || null;
-    } catch (error) {
-        console.error('Error decoding JWT:', error);
-        return null;
-    }
     }
 }

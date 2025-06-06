@@ -2,6 +2,8 @@ import { Component, OnInit } from '@angular/core';
 import { BoardComponent } from '../../components/board/board.component';
 import { Router } from '@angular/router';
 import { WebsocketService } from '../../service/websocket.service';
+import {InvitationService} from "../../service/invitation.service";
+import {OnlinePlayerService} from "../../service/online-player.service";
 
 @Component({
   selector: 'app-home-page',
@@ -13,10 +15,12 @@ import { WebsocketService } from '../../service/websocket.service';
 export class HomePageComponent {
   constructor (
     private wsService: WebsocketService,
+    private invitationService: InvitationService,
+    private onlinePlayerService: OnlinePlayerService,
     private router: Router
   ) {
     // Wait for WebSocket connection before setting status
-    this.wsService.setStatus('idle');
+    this.onlinePlayerService.setStatus('IDLE');
   }
 
   onNavigate(path:any){

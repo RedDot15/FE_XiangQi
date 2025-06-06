@@ -13,8 +13,8 @@ import { NgIf } from '@angular/common';
   selector: 'app-header',
   standalone: true,
   imports: [
-    FormsModule, 
-    NgbModule, 
+    FormsModule,
+    NgbModule,
     NgIf,
     NzModalModule,
   ],
@@ -32,10 +32,9 @@ export class HeaderComponent implements OnInit {
   constructor(
     private playerService: PlayerService,
     private router: Router,
-    private cookieService: CookieService,
     private authService: AuthService,
     private modalService: NgbModal,
-    private nzModalService: NzModalService
+    private nzModalService: NzModalService,
   ) {}
 
   ngOnInit(): void {
@@ -51,7 +50,7 @@ export class HeaderComponent implements OnInit {
       console.error('Error fetching player info:', error);
     }
   }
-  
+
   openChangePasswordModal(content: any) {
     this.oldPassword = '';
     this.newPassword = '';
@@ -97,8 +96,7 @@ export class HeaderComponent implements OnInit {
 
     this.isLoading = true; // Bật trạng thái loading
     try {
-      const token = this.cookieService.getToken();
-      const uid = this.getUidFromToken(token);
+      const uid = this.authService.getUserId();
       if (uid) {
         const res = await this.playerService.changePassword({
           oldPassword: this.oldPassword,
@@ -142,10 +140,7 @@ export class HeaderComponent implements OnInit {
   }
 
   onNavigateHistory(){
-    // Get access token
-    const token = this.cookieService.getToken();
-    // Decode the JWT to get the user ID
-    const uid = this.getUidFromToken(token);
+    const uid = this.authService.getUserId();
 
     // Routing
     this.router.navigate(['/match-history/' + uid]);
@@ -156,15 +151,5 @@ export class HeaderComponent implements OnInit {
     await this.authService.handleLogout();
     // Routing to login page
     this.router.navigate(['/login']);
-  }
-  
-  private getUidFromToken(token: string): string | null {
-    try {
-      const decoded: any = jwtDecode(token);
-      return decoded.uid || null;
-    } catch (error) {
-      console.error('Error decoding JWT:', error);
-      return null;
-    }
   }
 }

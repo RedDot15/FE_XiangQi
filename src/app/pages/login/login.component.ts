@@ -41,13 +41,15 @@ export class LoginComponent {
     try {
       const res = await this.authService.auth(this.auth);
       if (res.status === "ok") {
+        // Save token
         const { accessToken, refreshToken } = res.data;
         this.cookieService.setToken(accessToken);
         this.cookieService.setRefreshToken(refreshToken);
+        // Navigate
         this.router.navigate(['/']);
-      }   
-    
-    } 
+      }
+
+    }
     catch (error) {
       this.showModalMessage("Đăng nhập thất bại. Vui lòng kiểm tra lại tên đăng nhập hoặc mật khẩu.");
       // this.showModalMessage("Có lỗi xảy ra khi đăng nhập. Vui lòng thử lại sau.");
@@ -80,8 +82,8 @@ export class LoginComponent {
           this.isLogin = true;
           this.showModal = false;
         }, 2000);
-      } 
-    } 
+      }
+    }
     catch (error:any) {
       console.log(error)
       if(error.status === 409 && error.error?.message === 'Username already exists.'){
@@ -98,7 +100,7 @@ export class LoginComponent {
       this.showModal = false;
     }, 2000);
   }
-  
+
   isStrongPassword(password: string): boolean {
     const regex = /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
     return regex.test(password);
