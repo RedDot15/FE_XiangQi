@@ -1,11 +1,11 @@
 /* You can add global styles to this file, and also import other style files */
 
-html, body { 
-  height: 100%; 
+html, body {
+  height: 100%;
 }
-body { 
-  margin: 0; 
-  font-family: Roboto, "Helvetica Neue", sans-serif; 
+body {
+  margin: 0;
+  font-family: Roboto, "Helvetica Neue", sans-serif;
 }
 
 /* Đảm bảo overlay container có z-index cao */
@@ -18,4 +18,8 @@ router-outlet + * {
   position: relative;
   z-index: 1 !important;
   pointer-events: auto !important;
+}
+
+ngb-modal-window.custom-modal { /* Target the custom modal class to ensure specificity */
+  z-index: 1056 !important; /* Set a z-index higher than the backdrop's 1055 */
 }
