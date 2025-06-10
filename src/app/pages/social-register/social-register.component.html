@@ -1,0 +1,37 @@
+<section class="d-flex align-items-center h_vh100">
+    <div class="container">
+      <div class="d-flex align-items-center justify-content-center form_wrapper">
+        <div class="tab-wrapper">
+          <h3 class="text-center game_title">Đăng ký tài khoản mới</h3>
+          <p class="text-center" *ngIf="socialEmail">
+            Địa chỉ email của Google: **{{ socialEmail }}**
+          </p>
+  
+          <div class="tab-content" *ngIf="showRegistrationForm">
+            <form class="form" (submit)="registerSocialPlayer($event)">
+              <label>Tên đăng nhập</label>
+              <input type="text" [(ngModel)]="username" name="username" class="form-control" placeholder="Nhập tên đăng nhập" required>
+            
+              <label>Mật khẩu</label>
+              <input type="password" [(ngModel)]="password" name="password" class="form-control" placeholder="Nhập mật khẩu" required>
+            
+              <label>Xác nhận mật khẩu</label>
+              <input type="password" [(ngModel)]="confirmPassword" name="confirmPassword" class="form-control" placeholder="Nhập lại mật khẩu" required>
+            
+              <button type="submit" class="btn btn-success submit-btn">Hoàn tất Đăng ký</button>
+            </form>
+          </div>
+          <div *ngIf="!showRegistrationForm" class="text-center">
+            <p>Đang xử lý đăng nhập Google của bạn...</p>
+            <div class="spinner-border text-danger" role="status">
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-overlay" *ngIf="showModal">
+      <div class="modal-content">
+        <p>{{ modalMessage }}</p>
+      </div>
+    </div>
+</section>

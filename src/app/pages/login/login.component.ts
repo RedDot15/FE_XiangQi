@@ -6,6 +6,7 @@ import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { AuthRequest } from '../../models/request/auth.request';
 import { PlayerService } from '../../service/player.service';
+import { OAuthConfig } from '../../../environments/environment';
 
 @Component({
   selector: 'app-login',
@@ -27,6 +28,13 @@ export class LoginComponent {
 
   showModal = false;
   modalMessage = '';
+
+  // --- Google OAuth Config ---
+  private googleAuthUri = OAuthConfig.authUri;
+  private googleClientId = OAuthConfig.clientId;
+  private googleRedirectUri = OAuthConfig.redirectUri; 
+  private googleScope = 'openid profile email'; 
+  // -------------------------
 
   constructor(
     private authService: AuthService,
@@ -86,10 +94,22 @@ export class LoginComponent {
     }
     catch (error:any) {
       console.log(error)
-      if(error.status === 409 && error.error?.message === 'Username already exists.'){
+      if(error.status === 409 && error.error?.message === 'User already exists.'){
         this.showModalMessage("Tên người dùng đã tồn tại!")
       }
     }
+  }
+
+  signInWithGoogle() {
+    const authUrl = `${this.googleAuthUri}?` +
+                    `client_id=${this.googleClientId}&` +
+                    `response_type=code&` +
+                    `scope=${encodeURIComponent(this.googleScope)}&` +
+                    `redirect_uri=${encodeURIComponent(this.googleRedirectUri)}&` +
+                    `access_type=offline&` + // Request a refresh token
+                    `prompt=consent select_account`; // Force consent and account selection
+
+    window.location.href = authUrl;
   }
 
   showModalMessage(message: string) {

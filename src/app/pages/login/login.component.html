@@ -15,28 +15,34 @@
   
           <div class="tab-content">
             <form *ngIf="isLogin" class="form" (submit)="login($event)">
-                <label>Tên đăng nhập</label>
-                <input type="text" [(ngModel)]="auth.username" name="username" class="form-control" placeholder="Nhập tên đăng nhập" required>
+              <label>Tên đăng nhập</label>
+              <input type="text" [(ngModel)]="auth.username" name="username" class="form-control" placeholder="Nhập tên đăng nhập" required>
+            
+              <label>Mật khẩu</label>
+              <input type="password" [(ngModel)]="auth.password" name="password" class="form-control" placeholder="Nhập mật khẩu của bạn" required>
+            
+              <button type="submit" class="btn btn-danger submit-btn">Đăng nhập</button>
+            </form>
               
-                <label>Mật khẩu</label>
-                <input type="password" [(ngModel)]="auth.password" name="password" class="form-control" placeholder="Nhập mật khẩu của bạn" required>
-              
-                <button type="submit" class="btn btn-danger submit-btn">Đăng nhập</button>
-              </form>
-              
-              <!-- Form Đăng ký -->
-              <form *ngIf="!isLogin" class="form" (submit)="register($event)">
-                <label>Tên đăng nhập</label>
-                <input type="text" [(ngModel)]="auth.username" name="username" class="form-control" placeholder="Nhập tên đăng nhập" required>
-              
-                <label>Mật khẩu</label>
-                <input type="password" [(ngModel)]="auth.password" name="password" class="form-control" placeholder="Nhập mật khẩu" required>
-              
-                <label>Xác nhận mật khẩu</label>
-                <input type="password" [(ngModel)]="confirmPassword" name="confirmPassword" class="form-control" placeholder="Nhập lại mật khẩu" required>
-              
-                <button type="submit" class="btn btn-success submit-btn">Đăng ký</button>
-              </form>
+            <!-- Form Đăng ký -->
+            <form *ngIf="!isLogin" class="form" (submit)="register($event)">
+              <label>Tên đăng nhập</label>
+              <input type="text" [(ngModel)]="auth.username" name="username" class="form-control" placeholder="Nhập tên đăng nhập" required>
+            
+              <label>Mật khẩu</label>
+              <input type="password" [(ngModel)]="auth.password" name="password" class="form-control" placeholder="Nhập mật khẩu" required>
+            
+              <label>Xác nhận mật khẩu</label>
+              <input type="password" [(ngModel)]="confirmPassword" name="confirmPassword" class="form-control" placeholder="Nhập lại mật khẩu" required>
+            
+              <button type="submit" class="btn btn-success submit-btn">Đăng ký</button>
+            </form>
+
+            <div class="d-flex justify-content-center mt-4">
+              <button class="btn btn-outline-primary" (click)="signInWithGoogle()">
+                <i class="fa-brands fa-google"></i> Đăng nhập bằng Google
+              </button>
+          </div>
           </div>
         </div>
       </div>

@@ -17,14 +17,16 @@ export class AuthService {
     private cookieService: CookieService,
   ) { }
 
-  auth = async (auth: AuthRequest) => await this.httpClient.post('api/auth/tokens', auth);
-
   saveUserInfo(accessToken: string) {
     // Save userId
     this.userId = this.getUidFromToken(accessToken);
     // Save username
     this.username = this.getUsernameFromToken(accessToken);
   }
+
+  auth = async (auth: AuthRequest) => await this.httpClient.post('api/auth/tokens', auth);
+
+  socialAuthenticate = async (provider: string, request: any) => await this.httpClient.post(`api/auth/outbound/${provider}/authenticate`, request);
 
   logout = async () => await this.httpClient.deleteWithAuth('api/auth/tokens', {});
 

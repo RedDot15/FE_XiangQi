@@ -20,5 +20,7 @@ export class PlayerService {
 
   register = async (auth: AuthRequest) => await this.httpClient.post('api/players', auth);
 
+  registerSocial = async (playerData: any) => await this.httpClient.post(`api/players/social`, playerData);
+
   changePassword = async (request: ChangePasswordRequest) => await this.httpClient.putWithAuth('api/players', request)
 }

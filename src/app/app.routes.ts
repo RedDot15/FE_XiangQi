@@ -2,11 +2,13 @@ import { Routes,mapToCanActivate } from '@angular/router';
 import { LoginComponent } from './pages/login/login.component';
 import { LayoutComponent } from './layout/layout.component';
 import { AppGuard } from './app.guard';
+import { SocialRegisterComponent } from './pages/social-register/social-register.component';
 export const routes: Routes = [
     {
         path: "login",
         component: LoginComponent
     },
+    { path: 'social/register', component: SocialRegisterComponent },
     {
         path: "",
         component:LayoutComponent,
